@@ -7,10 +7,7 @@ There are some plugins preinstalled that I developed.
 You can use these as is, or as examples to build your own plugins.
 It it built to run on any platform, but the currently supported plaforms are IRC and Discord.
 
-<video controls autoplay>
-    <source src="https://thumbs.gfycat.com/FearlessTightGarpike-mobile.mp4" type="video/mp4">
-    Video not supported by your browser!
-</video>
+![menu gif](https://thumbs.gfycat.com/FearlessTightGarpike-size_restricted.gif)
 
 
 Refactor - Why is this different from IRCLinkBot?
