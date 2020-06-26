@@ -1,7 +1,7 @@
 *.log
 *.pyc
 *~
-config.json
+*config.json
 .ftpconfig
 .remote-sync.json
 __pycache__
