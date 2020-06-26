@@ -1,8 +1,7 @@
 import json
 from . import irc
 
-def get_config():
-    config_location = "config.json"
+def get_config(config_location="config.json"):
     default_config = {
         "irc_config": {
             "type": "irc",
