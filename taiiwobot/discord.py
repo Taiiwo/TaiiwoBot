@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import time
 import re
@@ -123,6 +124,15 @@ class Discord(Server):
         e.set_footer(text=footer)
         return e
 
+    def delete_message(self, channel, message, after=0):
+        gaysyncio(
+            [
+                [asyncio.sleep, (after,), {}],
+                [client.get_message, (channel, message), {}],
+                [client.delete_message, ("$1",), {}],
+            ]
+        )
+
     def menu(self, target, user, question, answers=None, ync=None, cancel=False):
         if ync:
             if len(ync) != 3:
@@ -181,7 +191,15 @@ class Discord(Server):
 
     # discord method wrappers
     def msg(
-        self, target, message, embed=None, reactions=tuple(), user=None, callback=None, files=[]
+        self,
+        target,
+        message,
+        embed=None,
+        reactions=tuple(),
+        user=None,
+        callback=None,
+        files=[],
+        delete_after=False,
     ):
         if type(target) == str:
             if target.isnumeric():
@@ -224,6 +242,12 @@ class Discord(Server):
                 async_calls.append([add_reaction_callbacks, ("$0",), {}])
             if callback:
                 async_calls.append(callback)
+            if delete_after:
+
+                async def d(message, delay):
+                    await message.delete(delay=delay)
+
+                async_calls.append([d, ("$0", delete_after), {}])
             self.gaysyncio(async_calls)
             self.trigger("sent", target, message, embed)
 
