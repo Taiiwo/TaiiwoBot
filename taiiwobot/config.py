@@ -1,6 +1,7 @@
 import json
 from . import irc
 
+
 def get_config(config_location="config.json"):
     default_config = {
         "irc_config": {
@@ -9,11 +10,12 @@ def get_config(config_location="config.json"):
             "user": "TaiiwoBot",
             "nick": "TaiiwoBot",
             "ident": "TaiiwoBot",
-            "autojoin": []
+            "autojoin": [],
         },
         "discord_config": {
-            "api_key[REMOVE]": "Insert your api key here and remove the [REMOVE] tag from the key <--"
-        }
+            "owner[REMOVE]": "your user ID",
+            "api_key[REMOVE]": "Insert your api key here and remove the [REMOVE] tag from the key <--",
+        },
     }
     try:
         user_config = json.loads(open(config_location).read())
@@ -23,7 +25,7 @@ def get_config(config_location="config.json"):
         )
         if answer[0].lower() == "y":
             open(config_location, "w+").write(
-                json.dumps(default_config, indent=4, separators=(',', ': '))
+                json.dumps(default_config, indent=4, separators=(",", ": "))
             )
             print("[i] A config file was created. Edit it and try again")
         else:

@@ -3,20 +3,21 @@ import inspect
 
 from taiiwobot.plugin import Plugin
 
+
 class Reload(Plugin):
     def __init__(self, bot):
         self.bot = bot
         self.interface = bot.util.Interface(
-            "reload",
-            "Reloads a plugin's code for dev purposes",
-            [],
-            self.reload
+            "reload", "Reloads a plugin's code for dev purposes", [], self.reload
         ).listen()
 
     def unload(self):
         exit("You can't reload this plugin using itsself for obvious reasons...")
 
     def reload(self, message, query):
+        # me only!
+        if message.author != self.bot.config["owner"]:
+            return
         for plugin in self.bot.plugins:
             if type(plugin).__name__.lower() == query.lower():
                 # unload plugin
@@ -26,7 +27,7 @@ class Reload(Plugin):
                 self.bot.msg(message.target, "Plugin unloaded..")
                 # load the plugin
                 break
-        for root, dirs, files in os.walk('plugins'):
+        for root, dirs, files in os.walk("plugins"):
             # for each py file in the plugins folder
             for file in files:
                 if file[-3:] == ".py" and file[:-3].lower() == query.lower():
@@ -34,9 +35,7 @@ class Reload(Plugin):
                     namespace = {}
                     with open(os.path.join(root, file)) as plugin_file:
                         code = compile(
-                            plugin_file.read(),
-                            os.path.join(root, file),
-                            "exec"
+                            plugin_file.read(), os.path.join(root, file), "exec"
                         )
                         exec(code, namespace)
                     plugin = False
