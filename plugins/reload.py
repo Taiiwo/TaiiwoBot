@@ -17,6 +17,7 @@ class Reload(Plugin):
     def reload(self, message, query):
         # me only!
         if message.author != self.bot.config["owner"]:
+            self.bot.msg(message.target, "Access Denied!")
             return
         for plugin in self.bot.plugins:
             if type(plugin).__name__.lower() == query.lower():
