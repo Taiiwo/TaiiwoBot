@@ -18,6 +18,7 @@ class LiberPrimus(Plugin):
                 "l latin returns the page in latin form 0",
                 "n number returns the page in number form 0",
                 "b book Select book 1 or 2 1",
+                "i image Returns page image instead 0",
             ],
             self.page,  # root function
             subcommands=[  # list of subcommands
@@ -28,6 +29,7 @@ class LiberPrimus(Plugin):
                         "l latin returns the page in latin form 0",
                         "n number returns the page in number form 0",
                         "b book Select book 1 or 2 1",
+                        "i image Returns page image instead 0",
                     ],  # subcommand flags
                     self.page,  # subcommand function
                 )
@@ -37,7 +39,16 @@ class LiberPrimus(Plugin):
     def main(self, message, *args):  # include your root flags here
         self.interface.help(message.target, self)
 
-    def page(self, message, page_number, *args, latin=False, number=False, book="2"):
+    def page(
+        self,
+        message,
+        page_number,
+        *args,
+        latin=False,
+        number=False,
+        book="2",
+        image=False
+    ):
         if book.isnumeric():
             book = int(book)
         else:
@@ -55,10 +66,22 @@ class LiberPrimus(Plugin):
             or (page_number > 14 and book == 1)
             or (page_number > 56 and book == 2)
         ):
-            print( page_number)
+            print(page_number)
             raise self.bot.util.RuntimeError(
                 "Invalid page number", message.target, self
             )
+        if image:
+            if book == 1:
+                self.bot.msg(
+                    message.target,
+                    "http://opensource.exposed/images/LP1_%s.jpg" % page_number,
+                )
+            else:
+                self.bot.msg(
+                    message.target,
+                    "http://opensource.exposed/images/%s.jpg" % page_number,
+                )
+            return
         page = self.lp.pages[(16 if book == 2 else 0) + int(page_number)]
         if latin:
             page = page.to_latin()
