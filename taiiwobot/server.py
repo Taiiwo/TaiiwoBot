@@ -3,6 +3,7 @@ import re
 
 from . import util
 
+
 class Server:
     callbacks = {}
     message_callbacks = {}
@@ -10,6 +11,10 @@ class Server:
     def code_block(self, text):
         # code blocks aren't supported by default
         return text
+
+    # returns true if server plugin should respond to message
+    def plugin_valid(self, plugin, message):
+        return True
 
     def mention(self, user):
         return user
@@ -20,8 +25,9 @@ class Server:
     def menu(self, target, user, question, answers=None, ync=None, cancel=False):
         if ync:
             if len(ync) != 3:
-                raise util.Error("ync must have 3 elements:"
-                        "a function for yes, no, and cancel")
+                raise util.Error(
+                    "ync must have 3 elements:" "a function for yes, no, and cancel"
+                )
             reactions = ["👍", "👎", "❌"]
             answers = ["Yes", "No", "Cancel"]
             functions = ync
@@ -30,33 +36,33 @@ class Server:
                 raise util.Error("You can't call this function with no answers")
             if len(answers) > 11:
                 raise util.Error(
-                    "A maximum of 11 options are supported. You supplied %s" %
-                    len(answers)
+                    "A maximum of 11 options are supported. You supplied %s"
+                    % len(answers)
                 )
             numbers = ["0⃣", "1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]
             # if user supplies an icon to use, use that, else use a number icon
-            reactions = [numbers[i] if len(a) < 3 else a[0]
-                    for i, a in enumerate(zip(answers))]
+            reactions = [
+                numbers[i] if len(a) < 3 else a[0] for i, a in enumerate(zip(answers))
+            ]
             # parse the answers array, ignoring the supplied icon if supplied
-            answers, functions = zip(*[a_f if len(a_f) < 3 else a_f[1:3]
-                    for a_f in answers])
+            answers, functions = zip(
+                *[a_f if len(a_f) < 3 else a_f[1:3] for a_f in answers]
+            )
         message = "%s\n\n%s\n\nReact to answer." % (
             question,
-            "\n".join(["[%s] - %s" % (r, a) for r, a in zip(reactions, answers)])
+            "\n".join(["[%s] - %s" % (r, a) for r, a in zip(reactions, answers)]),
         )
         self.msg(target, message, reactions=zip(reactions, functions), user=user)
 
     def prompt(self, target, user, prompt, handler, cancel=False, timeout=60.0):
-        self.msg(target, prompt,
-            reactions=[["❌", cancel_wrapper]],
-            user=user
-        )
+        self.msg(target, prompt, reactions=[["❌", cancel_wrapper]], user=user)
         self.message_callbacks[target + ":" + user] = [time.time(), handler, timeout]
 
     # event handler handling
     def on(self, command):
         def handler(f):
             self.add_callback(f, command)
+
         return handler
 
     # removes an even handler
@@ -89,5 +95,5 @@ class Server:
             server_type="unknown",
             timestamp=m.timestamp,
             embeds=m.embeds,
-            attachments=m.attachments
+            attachments=m.attachments,
         )

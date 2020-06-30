@@ -2,12 +2,14 @@ import pymongo
 import requests
 from threading import Thread
 
+
 def thread(func, args=[], kwargs={}):
     thread = Thread(target=func, args=args, kwargs=kwargs)
     thread.start()
     return thread
 
-def maketiny(url):# make a tinyurl from a string
+
+def maketiny(url):  # make a tinyurl from a string
     try:
         html = requests.get("http://tinyurl.com/api-create.php?url=" + url)
         tiny = str(html.text)
@@ -16,15 +18,20 @@ def maketiny(url):# make a tinyurl from a string
     except:
         return url
 
+
 db = False
+
+
 def get_db():
     global db
     if not db:
         db = pymongo.MongoClient()["taiiwobot"]
     return db
 
+
 def debug(msg):
     print(msg)
+
 
 def missing_keys(keys, dict):
     missing_keys = []
@@ -33,20 +40,34 @@ def missing_keys(keys, dict):
             missing_keys.append(key)
     return False if len(missing_keys) == 0 else missing_keys
 
+
 def callback(callbacks, data):
     for callback in callbacks:
         callback(data)
 
+
 # universal message object
-class Message():
-    def __init__(self, nick=None, username=None, author_id=None, host=None,
-                    type=None, target=None, content=None, raw_message=None,
-                    timestamp=None, server_type=None, embeds=[], attachments=[],
-                    ident=None):
-        self.nick = nick # display name of the user
-        self.username = username # unique username of the user
+class Message:
+    def __init__(
+        self,
+        nick=None,
+        username=None,
+        author_id=None,
+        host=None,
+        type=None,
+        target=None,
+        content=None,
+        raw_message=None,
+        timestamp=None,
+        server_type=None,
+        embeds=[],
+        attachments=[],
+        ident=None,
+    ):
+        self.nick = nick  # display name of the user
+        self.username = username  # unique username of the user
         self.author = author_id
-        self.author_id = author_id # deprecated
+        self.author_id = author_id  # deprecated
         self.host = host
         self.type = type
         self.target = target
@@ -57,22 +78,33 @@ class Message():
         self.attachments = attachments
         self.embeds = embeds
 
+
 class Interface:
-    def __init__(self, name, desc, flag_info, func,
-                    subcommands=[], is_subcommand=False, prefix="$"):
+    def __init__(
+        self,
+        name,
+        desc,
+        flag_info,
+        func,
+        subcommands=[],
+        is_subcommand=False,
+        prefix="$",
+    ):
         self.prefix = prefix
         self.name = name
         self.desc = desc
         self.func = func
+        self.plugin = func.__self__
         self.subcommands = []
         for subcommand in subcommands:
             subcommand.is_subcommand = True
             self.subcommands.append(subcommand)
         self.is_subcommand = is_subcommand
         try:
-            self.flag_info = [[
-                x[0], x[1].replace("-", "_"), " ".join(x[2:-1]), int(x[-1])
-            ] for x in [b.split() for b in flag_info]]
+            self.flag_info = [
+                [x[0], x[1].replace("-", "_"), " ".join(x[2:-1]), int(x[-1])]
+                for x in [b.split() for b in flag_info]
+            ]
         except ValueError as e:
             raise Error("The last word of a flag string must be an integer", e)
         self.flags = []
@@ -81,12 +113,13 @@ class Interface:
 
     # listen for messages
     def listen(self):
-        @self.func.__self__.bot.on("message")
+        @self.plugin.bot.on("message", self.plugin.name)
         def on_message(message):
-            if not self.func or hasattr(self.func.__self__, "_unloaded"):
+            if not self.func or hasattr(self.plugin, "_unloaded"):
                 self.func = None
             else:
-                self.func.__self__.interface.process(message)
+                self.plugin.interface.process(message)
+
         return self
 
     def add_subcommand(self, interface):
@@ -98,13 +131,23 @@ class Interface:
     # posts the help message for this command into the chat
     def help(self, target, plugin):
         subcommands = "\n".join(
-            ["\t%s%s %s" % (s.name, " " * (10 - len(s.name)), s.desc) for s in self.subcommands]
+            [
+                "\t%s%s %s" % (s.name, " " * (10 - len(s.name)), s.desc)
+                for s in self.subcommands
+            ]
         )
         flags = "\n".join(
-            ["\t-%s --%s%s %s %s" % (
-                f[0], f[1], "=<value>" if f[3] else "",
-                " " * (20 - len(f[0] + f[1]) - (8 if f[3] else 0)), f[2]
-            ) for f in self.flag_info]
+            [
+                "\t-%s --%s%s %s %s"
+                % (
+                    f[0],
+                    f[1],
+                    "=<value>" if f[3] else "",
+                    " " * (20 - len(f[0] + f[1]) - (8 if f[3] else 0)),
+                    f[2],
+                )
+                for f in self.flag_info
+            ]
         )
         plugin.bot.server.msg(
             target,
@@ -116,7 +159,7 @@ class Interface:
             "Flags:\n"
             "\t--help                    display usage information for this command\n"
             "%s"
-            "```" % (self.prefix + self.name, self.desc, subcommands, flags)
+            "```" % (self.prefix + self.name, self.desc, subcommands, flags),
         )
 
     # Future Taiiwo here. This function is a completely needless reimplementation
@@ -146,8 +189,9 @@ class Interface:
             if subcommand:
                 # process the rest of this command as the sub command
                 message.content = " ".join(args[i:])
-                return subcommand.process(message,
-                    arguments=arguments, kwargs=kwargs, o_message=message) # pass the flags we got
+                return subcommand.process(
+                    message, arguments=arguments, kwargs=kwargs, o_message=message
+                )  # pass the flags we got
             elif arg.lstrip("-") == "help":
                 self.help(o_message.target, self.func.__self__)
                 return False
@@ -166,8 +210,10 @@ class Interface:
                         # skip processing on the next arg
                         i += 1
                         if i >= len(args):
-                            raise RuntimeError('Flag `%s` requires a value. Try -%s="some value"' %
-                                    (info[1], info[0]))
+                            raise RuntimeError(
+                                'Flag `%s` requires a value. Try -%s="some value"'
+                                % (info[1], info[0])
+                            )
                         # set the value to that next arg
                         value = args[i]
                     else:
@@ -180,7 +226,9 @@ class Interface:
                         while i < len(args):
                             if args[i][-1] == '"':
                                 # we found the end
-                                quote = (value + " ".join(args[start+1:i+1]))[1:-1]
+                                quote = (value + " ".join(args[start + 1 : i + 1]))[
+                                    1:-1
+                                ]
                                 break
                             i += 1
                         # did we find the end of the quote
@@ -202,48 +250,69 @@ class Interface:
                     raise RuntimeError(
                         "Flag %s does not exist. If it was intended as an "
                         "argument, you must escape it like `\\\\%s`" % (arg, arg),
-                    o_message.target, self.func.__self__)
+                        o_message.target,
+                        self.func.__self__,
+                    )
             else:
                 # this argument is not a flag, therefore we can add it as an argument
                 arguments += (arg[1:] if arg[0] == "\\" else arg,)
             i += 1
         return self.func(message, *arguments, **kwargs)
 
+
 def interface_test():
     interface = Interface(
         "test",
         "This is a test interface",
-        [
-            "t test This is a test flag 0",
-            "t2 test2 This flag has a value 1"
-        ],
+        ["t test This is a test flag 0", "t2 test2 This flag has a value 1"],
         lambda *x, **y: (x, y),
         subcommands=[
             Interface(
-                "sub_test",
-                "This is a test subcommand",
-                [],
-                lambda *x, **y: (x, y)
+                "sub_test", "This is a test subcommand", [], lambda *x, **y: (x, y)
             )
-        ]
+        ],
     )
     import copy
-    interface.add_subcommand(copy.copy(interface)) # is this allowed? :eyes:
+
+    interface.add_subcommand(copy.copy(interface))  # is this allowed? :eyes:
     message_tests = [
-        [Message(content='$test -t2="ayy"'), (tuple(), {"test2":"ayy"})], # passing a quoted value to a non-bool flag
-        [Message(content="$test -t"), (tuple(), {"test": True})], # default use of a bool flag
-        [Message(content="$test -t a"), (("a",), {"test": True})], # passing a value to a bool flag
-        [Message(content="$test -t a b"), (("a", "b"), {"test": True})], # passing a value to a bool flag plus an argument
-        [Message(content="$test sub_test ayy"), (("ayy",), {})], # passing an argument to a sub command
-        [Message(content="$test test -t"),(tuple(), {"test": True})], # testing sub command recurrsion
-        [Message(content="$test test test test -t"),(tuple(), {"test": True})] # hmmm
+        [
+            Message(content='$test -t2="ayy"'),
+            (tuple(), {"test2": "ayy"}),
+        ],  # passing a quoted value to a non-bool flag
+        [
+            Message(content="$test -t"),
+            (tuple(), {"test": True}),
+        ],  # default use of a bool flag
+        [
+            Message(content="$test -t a"),
+            (("a",), {"test": True}),
+        ],  # passing a value to a bool flag
+        [
+            Message(content="$test -t a b"),
+            (("a", "b"), {"test": True}),
+        ],  # passing a value to a bool flag plus an argument
+        [
+            Message(content="$test sub_test ayy"),
+            (("ayy",), {}),
+        ],  # passing an argument to a sub command
+        [
+            Message(content="$test test -t"),
+            (tuple(), {"test": True}),
+        ],  # testing sub command recurrsion
+        [Message(content="$test test test test -t"), (tuple(), {"test": True})],  # hmmm
     ]
     for test in message_tests:
         r = interface.process(test[0])
-        print("%s - %s" % (r, "True" if r[0][1:] == test[1][0] and r[1] == test[1][1] else "False"))
+        print(
+            "%s - %s"
+            % (r, "True" if r[0][1:] == test[1][0] and r[1] == test[1][1] else "False")
+        )
+
 
 class Error(Exception):
     pass
+
 
 class RuntimeError(Exception):
     def __init__(self, message, target, plugin):

@@ -16,7 +16,7 @@ class TaiiwoBot:
         self.util = util
         self.plugins = []
         # load our plugins
-        @server.on("ready")
+        @server.on("ready", "root")
         def server_ready(d):
             if len(self.plugins) == 0:
                 self.plugins = self.load_plugins()
@@ -32,8 +32,6 @@ class TaiiwoBot:
             for file in files:
                 if file[-3:] == ".py":
                     # import it
-                    if "blacklisted_plugins" in self.config and file[:-3] in config["blacklisted_plugins"]:
-                        continue
                     plugin = __import__(
                         os.path.join(root, file[:-3])
                         .replace("/", ".")

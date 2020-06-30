@@ -270,9 +270,9 @@ class Discord(Server):
         return self.client.user.id
 
     # event handler handling
-    def on(self, command):
+    def on(self, command, plugin_name):
         def handler(f):
-            self.add_callback(f, command)
+            self.add_callback(f, command, plugin_name)
 
         return handler
 
@@ -284,15 +284,60 @@ class Discord(Server):
     def trigger(self, event, *data):
         print(event)
         if event in self.callbacks:
-            try:
-                util.callback(self.callbacks[event], *data)
-            except util.RuntimeError as e:
-                print(e.text)
+            for callback, plugin in self.callbacks[event]:
+                if hasattr(data[0], "target"):
+                    if not self.plugin_valid(plugin, data[0]):
+                        continue
+                try:
+                    callback(*data)
+                except util.RuntimeError as e:
+                    print(e.text)
 
-    def add_callback(self, callback, command):
+    def add_callback(self, callback, command, plugin_name):
         if command not in self.callbacks:
             self.callbacks[command] = []
-        self.callbacks[command].append(callback)
+        self.callbacks[command].append((callback, plugin_name))
+
+    # returns true if server plugin should respond to message
+    def plugin_valid(self, plugin, message):
+        if not isinstance(plugin, str):
+            plugin = plugin.name
+        # if there's a plugin config entry for the server this
+        # event is happening in
+        server_id = str(message.raw_message.guild.id)
+        if server_id in self.config["plugin_config"]:
+            server_config = self.config["plugin_config"][server_id]
+            # if the server has blacklisted channels for this plugin
+            if "blacklist" in server_config and plugin in server_config["blacklist"]:
+                # is this channel blacklisted?
+                if server_config["blacklist"][plugin] == True:
+                    # the whole server is blacklisted
+                    return False
+                # if this channel is in the blacklist
+                if message.target in server_config["blacklist"][plugin]:
+                    # this channel is blacklisted
+                    return False
+                # if the blacklist is just a single channel, and it's us
+                if (
+                    isinstance(server_config["blacklist"][plugin], int)
+                    and data[0].target == server_config["blacklist"][plugin]
+                ):
+                    return False
+            # what if there is a whitelist, but this channel isn't on it?
+            if "whitelist" in server_config and plugin in server_config["whitelist"]:
+                # just to maintain symetry with the blacklist. No reason to do this
+                if server_config["whitelist"][plugin] == True:
+                    return True
+                # if channel not in list of whitelisted channels
+                if data[0].target not in server_config["whitelist"][plugin]:
+                    return False
+                # if the whitelist is just a single channel and we're not it
+                if (
+                    isinstance(server_config["whitelist"][plugin], int)
+                    and data[0].target != server_config["whitelist"][plugin]
+                ):
+                    return False
+        return True
 
     def format_message(self, m):
         return util.Message(

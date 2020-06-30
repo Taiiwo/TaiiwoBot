@@ -28,7 +28,7 @@ class Cookies(Plugin):
             ],
         ).listen()  # sets the on message callbacks and parses messages
 
-        @bot.on("message")
+        @bot.on("message", self.name)
         def spawn_cookie(message):
             if random.randint(1, 100) <= 1:
                 self.bot.msg(
