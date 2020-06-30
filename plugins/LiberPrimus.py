@@ -56,15 +56,15 @@ class LiberPrimus(Plugin):
                 "Invalid book number", message.target, self
             )
         if page_number.isnumeric():
-            page_number = int(page_number) - 1
+            page_number = int(page_number)
         else:
             raise self.bot.util.RuntimeError(
                 "Invalid page number", message.target, self
             )
         if (
             page_number < 0
-            or (page_number > 14 and book == 1)
-            or (page_number > 56 and book == 2)
+            or (page_number > 16 and book == 1)
+            or (page_number > 57 and book == 2)
         ):
             print(page_number)
             raise self.bot.util.RuntimeError(
@@ -72,17 +72,37 @@ class LiberPrimus(Plugin):
             )
         if image:
             if book == 1:
+                if page_number == 1:
+                    page_number = 2
+                elif page_number == 2:
+                    page_number = 1
+                elif page_number == 3:
+                    page_number = 4
+                elif page_number == 4:
+                    page_number = 5
+                elif page_number == 5:
+                    page_number = 3
                 self.bot.msg(
                     message.target,
-                    "http://opensource.exposed/images/LP1_%s.jpg" % page_number,
+                    "http://opensource.exposed/images/LP1_%s.jpg" % (page_number),
                 )
             else:
                 self.bot.msg(
                     message.target,
-                    "http://opensource.exposed/images/%s.jpg" % page_number,
+                    "http://opensource.exposed/images/%s.jpg" % (page_number),
                 )
             return
-        page = self.lp.pages[(16 if book == 2 else 0) + int(page_number)]
+        if book == 1 and page_number == 0:
+            self.bot.msg(message.target, self.bot.server.code_block("Liber Primus"))
+            return
+        elif book == 1 and page_number == 1:
+            page_number = 0
+        elif book == 1 and page_number == 2:
+            self.bot.msg(message.target, self.bot.server.code_block("Chapter 1\nIntus"))
+            return
+        else:
+            page_number -= 2
+        page = self.lp.pages[(15 if book == 2 else 0) + int(page_number)]
         if latin:
             page = page.to_latin()
         if number:
