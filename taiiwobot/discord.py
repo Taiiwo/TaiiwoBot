@@ -53,6 +53,17 @@ class Discord(Server):
             self.trigger("message", message)
 
         @self.client.event
+        async def on_message_delete(message):
+            message = self.format_message(message)
+            self.trigger("message-delete", message)
+
+        @self.client.event
+        async def on_message_edit(before, after):
+            before = self.format_message(before)
+            after = self.format_message(after)
+            self.trigger("message-edit", before, after)
+
+        @self.client.event
         async def on_reaction_add(reaction, reactor):
             self.trigger("reaction", reaction, reactor)
             # do we have any code to run in response to this?
@@ -103,7 +114,7 @@ class Discord(Server):
         author_icon=Empty,
         fields=[],
         footer=Empty,
-        color=Empty,
+        color="000",
         thumbnail=Empty,
     ):
         e = discord.Embed(title=title, url=url, description=desc, color=int(color, 16))
