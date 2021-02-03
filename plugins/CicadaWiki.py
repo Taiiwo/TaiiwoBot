@@ -20,10 +20,17 @@ class CicadaWiki(Plugin):
 
     def main(self, message, *args):  # include your root flags here
         query = "%20".join(args)
-        wikiajson = requests.get(
-            "http://uncovering-cicada.wikia.com/api/v1/Search/List?query=" + query
-        ).text
+        wikiajson = r = requests.get("http://uncovering-cicada.wikia.com/api.php", params={
+            "action":"query",
+            "list":"search",
+            "srsearch": " ".join(args),
+            "utf8": True,
+            "format":"json"
+        }).text
         wikiaobj = json.loads(wikiajson)
-        title = wikiaobj["items"][0]["title"]
-        tiny = self.bot.util.maketiny(wikiaobj["items"][0]["url"])
-        self.bot.msg(message.target, title + " - " + tiny)
+        if len(wikiaobj["query"]["search"]) == 0:
+            self.bot.msg(message.target, "No results.", follows=message)
+            return
+        article = wikiaobj["query"]["search"][0]
+        url = "https://uncovering-cicada.fandom.com/wiki/" + article["title"].replace(" ", "_")
+        self.bot.msg(message.target, article["title"] + " - " + url, follows=message)
