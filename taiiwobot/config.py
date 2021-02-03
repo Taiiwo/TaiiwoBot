@@ -19,6 +19,7 @@ class Config(dict):
                 "owner[REMOVE]": "your user ID",
                 "api_key[REMOVE]": "Insert your api key here and remove the [REMOVE] tag from the key <--",
             },
+            "test_config": {},
         }
         try:
             user_config = json.loads(open(config_location).read())
