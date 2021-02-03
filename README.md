@@ -2,7 +2,7 @@ TaiiwoBot - v5
 ==========
 Introduction - What is TaiiwoBot v5?
 ------------------------------------------------
-This program is chat bot framework that allows you to add custom plugins and customization options that runs quickly on a high memory system.
+This program is a chat bot framework that allows you to add custom plugins and customization options that runs quickly on a high memory system.
 There are some plugins preinstalled that I developed.
 You can use these as is, or as examples to build your own plugins.
 It it built to run on any platform, but the currently supported plaforms are IRC and Discord.
