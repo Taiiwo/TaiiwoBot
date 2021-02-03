@@ -8,30 +8,38 @@ from .server import Server
 """
  * Server for testing plugins
 """
+
+
 class TestServer(Server):
     def __init__(self, config):
         missing_keys = util.missing_keys([], config)
         if missing_keys:
-            quit("[E] Missing args: %s" % (', ').join(missing_keys))
-        defaults = {
-            "user": "TaiiwoTest",
-            "nick": "TaiiwoTest"
-        }
+            quit("[E] Missing args: %s" % (", ").join(missing_keys))
+        defaults = {"user": "TaiiwoTest", "nick": "TaiiwoTest"}
         defaults.update(config)
         self.config = defaults
-        self.callbacks = {
-            "SENT": []
-        }
+        self.callbacks = {"SENT": []}
+        self.type = "test"
         # a list of callbacks waiting for responses to specific users in specific locations
         # format {"location:username": [time_set, callback_function, timeout]}
         self.message_callbacks = {}
 
     def start(self):
         # listen forever
+        self.trigger("ready", self)
         self.listen()
 
-    def msg(self, target, message, embed=None, reactions=tuple(), user=None, callback=None):
-        print("%s>%s: %s"% (self.config["user"], target, message))
+    def msg(
+        self,
+        target,
+        message,
+        embed=None,
+        reactions=tuple(),
+        user=None,
+        callback=None,
+        follows=False,
+    ):
+        print("%s>%s: %s" % (self.config["user"], target, message))
 
     def join(self, channel):
         if channel[0] != "#":
@@ -54,17 +62,19 @@ class TestServer(Server):
                     self.add_callback(f, "PING")
                 elif command == "sent":
                     self.add_callback(f, "SENT")
+                elif command == "ready":
+                    self.add_callback(f, "ready")
+
         return handler
 
     def menu(self, target, user, question, answers=None, ync=None, cancel=False):
-        self.msg("JohnTester", "This would be a menu: %s\nanswers: %s\nync: %s" % (
-            question, answers, ync
-        ))
+        self.msg(
+            "JohnTester",
+            "This would be a menu: %s\nanswers: %s\nync: %s" % (question, answers, ync),
+        )
 
     def prompt(self, target, user, prompt, handler, cancel=False, timeout=60.0):
-        self.msg("JohnTester", "This would be a prompt: %s" % (
-            prompt
-        ))
+        self.msg("JohnTester", "This would be a prompt: %s" % (prompt))
         self.message_callbacks[target + ":" + user] = [time.time(), handler, timeout]
 
     def listen(self):
@@ -97,5 +107,5 @@ class TestServer(Server):
             content=raw_message,
             raw_message=raw_message,
             timestamp=time.time(),
-            ident="JohnIdent"
+            ident="JohnIdent",
         )
