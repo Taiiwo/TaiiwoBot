@@ -1,10 +1,10 @@
 from taiiwobot.plugin import Plugin
+import math
 
 import lib.cicada.cicada
-from lib.cicada.cicada.gematria import Latin, Runes, Number
+from lib.cicada.cicada.gematria import Latin, Runes
 
 cicada = lib.cicada.cicada
-Gematria = cicada.gematria.Gematria
 
 
 class Gematria(Plugin):
@@ -24,7 +24,6 @@ class Gematria(Plugin):
                     "runes",  # invoked with $template sub <args/flags>
                     "Translates string to runes Args: <string>",  # subcommand description
                     [
-                        "n numeric From numeric form 0",
                         "a atbash Perform atbash 0",
                     ],  # subcommand flags
                     self.runes,  # subcommand function
@@ -33,10 +32,25 @@ class Gematria(Plugin):
                     "latin",  # invoked with $template sub <args/flags>
                     "Translates string to latin Args: <string>",  # subcommand description
                     [
-                        "n numeric From numeric form 0",
                         "a atbash Perform atbash 0",
                     ],  # subcommand flags
                     self.latin,  # subcommand function
+                ),
+                bot.util.Interface(
+                    "sum",  # invoked with $template sub <args/flags>
+                    "Returns the gematria sum for a string: <string>",  # subcommand description
+                    [
+                        "r runic Supply input in runes instead of latin 0",
+                    ],  # subcommand flags
+                    self.sum,  # subcommand function
+                ),
+                bot.util.Interface(
+                    "sum_index",  # invoked with $template sub <args/flags>
+                    "Returns the sum of indexes for a string: <string>",  # subcommand description
+                    [
+                        "r runic Supply input in runes instead of latin 0",
+                    ],  # subcommand flags
+                    self.sum_index,  # subcommand function
                 ),
             ],
         ).listen()  # sets the on message callbacks and parses messages
@@ -46,28 +60,46 @@ class Gematria(Plugin):
 
     def runes(self, message, *args, numeric=False, atbash=False):
         string = " ".join(args)
-        if numeric:
-            input = Number(string)
-        else:
-            input = Latin(string)
+        input = Latin(string)
 
         if atbash:
             alpha = "ᚠᚢᚦᚩᚱᚳᚷᚹᚻᚾᛁᛄᛇᛈᛉᛋᛏᛒᛖᛗᛚᛝᛟᛞᚪᚫᚣᛡᛠ"
             runes = input.to_runes().substitute(alpha, alpha[::-1])
         else:
             runes = input.to_runes().text
-        self.bot.msg(message.target, self.bot.server.code_block(runes))
+        self.bot.msg(message.target, self.bot.server.code_block(runes), follows=message)
 
     def latin(self, message, *args, numeric=False, atbash=False):
         string = " ".join(args)
-        if numeric:
-            input = Number(string).to_runes()
-        else:
-            input = Runes(string)
+        input = Runes(string)
 
         if atbash:
             alpha = "ᚠᚢᚦᚩᚱᚳᚷᚹᚻᚾᛁᛄᛇᛈᛉᛋᛏᛒᛖᛗᛚᛝᛟᛞᚪᚫᚣᛡᛠ"
             latin = Runes(input.substitute(alpha, alpha[::-1])).to_latin().text
         else:
             latin = input.to_latin().text
-        self.bot.msg(message.target, self.bot.server.code_block(latin))
+        self.bot.msg(message.target, self.bot.server.code_block(latin), follows=message)
+
+    def sum(self, message, *args, runes=False):
+        if runes:
+            input = Runes(" ".join(args))
+        else:
+            input = Latin(" ".join(args))
+        n = input.gematria_sum()
+        self.bot.msg(message.target, n)
+        if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
+            self.bot.msg(message.target, "It's also prime!")
+            if all(n % p != 0 for p in range(2, int(math.sqrt(int(str(n)[::-1]))) + 1)):
+                self.bot.msg(message.target, "!emirp osla s'tI")
+
+    def sum_index(self, message, *args, runes=False):
+        if runes:
+            input = Runes(" ".join(args))
+        else:
+            input = Latin(" ".join(args))
+        n = sum(input.to_runes().to_index())
+        self.bot.msg(message.target, n)
+        if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
+            self.bot.msg(message.target, "It's also prime!")
+            if all(n % p != 0 for p in range(2, int(math.sqrt(int(str(n)[::-1]))) + 1)):
+                self.bot.msg(message.target, "!emirp osla s'tI")
