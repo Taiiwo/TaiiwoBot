@@ -22,7 +22,20 @@ class Discord(Server):
         self.reaction_callbacks = {}
         self.message_callbacks = {}
 
-        self.client = discord.Client()
+        # some logging handlers
+        @self.on("message", "root")
+        def log_message(message):
+            m = message.raw_message
+            util.debug(
+                "[%s] @%s #%s <%s> %s"
+                % (
+                    time.strftime("%H:%M:%S"),
+                    m.guild.name if m.guild else m.author.name,
+                    m.channel.name if str(m.channel.type) != "private" else "DM",
+                    m.author.name,
+                    m.content,
+                )
+            )
 
         @self.client.event
         async def on_ready():
