@@ -1,5 +1,7 @@
 import pymongo
 import requests
+import sys
+import os
 from threading import Thread
 
 
@@ -13,7 +15,7 @@ def maketiny(url):  # make a tinyurl from a string
     try:
         html = requests.get("http://tinyurl.com/api-create.php?url=" + url)
         tiny = str(html.text)
-        tiny = tiny.replace("http", "https")
+        tiny = tiny.replace("http:", "https:")
         return tiny
     except:
         return url
@@ -57,6 +59,7 @@ class Message:
         type=None,
         target=None,
         content=None,
+        server=None,
         raw_message=None,
         timestamp=None,
         server_type=None,
@@ -72,6 +75,7 @@ class Message:
         self.type = type
         self.target = target
         self.content = content
+        self.server = server
         self.raw_message = raw_message
         self.server_type = server_type
         self.timestamp = timestamp
@@ -106,14 +110,14 @@ class Interface:
                 for x in [b.split() for b in flag_info]
             ]
         except ValueError as e:
-            raise Error("The last word of a flag string must be an integer", e)
+            raise Error("The last word of a flag string must be an integer", e) from e
         self.flags = []
         # make a list of all our flags
         [self.flags.extend(i[0:2]) for i in self.flag_info]
 
     # listen for messages
     def listen(self):
-        @self.plugin.bot.on("message", self.plugin.name)
+        @self.plugin.bot.on("message", self.plugin.name + "-interface")
         def on_message(message):
             if not self.func or hasattr(self.plugin, "_unloaded"):
                 self.func = None
@@ -212,7 +216,9 @@ class Interface:
                         if i >= len(args):
                             raise RuntimeError(
                                 'Flag `%s` requires a value. Try -%s="some value"'
-                                % (info[1], info[0])
+                                % (info[1], info[0]),
+                                o_message.target,
+                                self.func.__self__,
                             )
                         # set the value to that next arg
                         value = args[i]
@@ -257,10 +263,22 @@ class Interface:
                 # this argument is not a flag, therefore we can add it as an argument
                 arguments += (arg[1:] if arg[0] == "\\" else arg,)
             i += 1
-        return self.func(message, *arguments, **kwargs)
+        try:
+            resp = self.func(message, *arguments, **kwargs)
+        except TypeError as e:
+            raise RuntimeError(
+                "Invalid number or format of arguments submitted for command. "
+                "Please see the help text for usage instructions.",
+                o_message.target,
+                self.func.__self__,
+            ) from e
+        return resp
 
 
 def interface_test():
+    def test(*x, **y):
+        return x, y
+
     interface = Interface(
         "test",
         "This is a test interface",
@@ -314,11 +332,13 @@ class Error(Exception):
     pass
 
 
+# This is a custom error handler to be used when an expected error is caused
+# during runtime such as invalid user input. It will print the error message
+# to the user, but also provide a full stack trace in the console
 class RuntimeError(Exception):
     def __init__(self, message, target, plugin):
-        self.text = message
-        super().__init__(message)
         plugin.bot.server.msg(target, message)
+        return super().__init__(message)
 
 
 if __name__ == "__main__":
