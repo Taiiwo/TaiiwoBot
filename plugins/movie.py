@@ -1,4 +1,6 @@
-import json, requests, time
+import json
+import requests
+import time
 from bs4 import BeautifulSoup
 from taiiwobot.plugin import Plugin
 
@@ -41,6 +43,18 @@ class Movie(Plugin):
     def root(self, message, *args):
         self.interface.help(message.target, self)
 
+    # decorator for authenticated functions
+    def authenticated(f):
+        def handler(*args, **kwargs):
+            if args[1].author == args[0].bot.config["owner"]:
+                return f(*args, **kwargs)
+            args[0].bot.msg(
+                args[1].target, "You don't have permission to use this command!", follows=args[1]
+            )
+            return False
+
+        return handler
+
     def loop(self):
         # every one hour
         while True:
@@ -51,41 +65,49 @@ class Movie(Plugin):
                 if quality and quality in self.acceptable_qualities:
                     # we got a movie
                     # fulfill all the notify requests
-                    requests = self.db["movie_requests"].find({"l": movie["l"]})
+                    requests = self.db["movie_requests"].find(
+                        {"l": movie["l"]})
                     for request in requests:
                         mentions = " ".join(
-                            [self.bot.server.mention(r) for r in request["requesters"]]
+                            [self.bot.server.mention(r)
+                             for r in request["requesters"]]
                         )
                         self.bot.msg(
                             request["request_channel"],
-                            "The movie `%s` is now available on fmovies in `%s` %s - [http://fmovies.taxi%s]"
-                            % (movie["l"], quality, mentions, link),
+                            "The movie `%s` is now available on fmovies in `%s` %s - [http://fmovies.cafe%s]"
+                            % (movie["l"], quality, mentions, link)
                         )
                     self.remove_from_watch_list(movie)
             time.sleep(60 * 60)
 
     def watchlist(self, message):
-        requests = self.db["movie_requests"].find({"requesters": message.author})
+        requests = self.db["movie_requests"].find(
+            {"requesters": message.author})
         if not requests:
             self.bot.msg(
                 message.target,
                 "You have no movies in your watchlist. Use $movie search <title> to add some!",
+                follows=message
             )
             return
-        f = lambda r: "%s - %s" % (
+
+        def f(r): return "%s - %s" % (
             self.bot.server.mention(r["request_channel"]),
             r["l"],
         )
-        self.bot.msg(message.target, "\n".join([f(r) for r in requests]))
+        self.bot.msg(message.target, "\n".join(
+            [f(r) for r in requests]), follows=message)
         self.bot.menu(
             message.target,
             message.author,
             "Would you like to delete an entry from this list?",
-            ync=[lambda r: self.delete(message), lambda r: None, lambda r: None],
+            ync=[lambda r: self.delete(
+                message), lambda r: None, lambda r: None],
         )
 
     def delete(self, message, *args):
-        requests = self.db["movie_requests"].find({"requesters": message.author})
+        requests = self.db["movie_requests"].find(
+            {"requesters": message.author})
         requests = [r for r in requests]
 
         def del_real(r, request):
@@ -98,6 +120,7 @@ class Movie(Plugin):
             self.bot.msg(
                 message.target,
                 "%s has been removed from your watchlist!" % request["l"],
+                follows=message
             )
 
         def del_movie(title, channel=message.target):
@@ -121,9 +144,10 @@ class Movie(Plugin):
             if len(requests) > 11:
                 titles = "\n".join([r["l"] for r in requests])
                 if len(titles) <= 2000:
-                    self.bot.msg(message.target, titles)
+                    self.bot.msg(message.target, titles, follows=message)
                 else:
-                    self.bot.msg(message.target, "You have too many movies to list!")
+                    self.bot.msg(
+                        message.target, "You have too many movies to list!", follows=message)
                 self.bot.prompt(
                     message.target,
                     message.author,
@@ -135,7 +159,8 @@ class Movie(Plugin):
                     message.target,
                     message.author,
                     "Select the movie you want to delete: ",
-                    answers=[[t["l"], lambda r: del_movie(t["l"])] for t in requests],
+                    answers=[[t["l"], lambda r: del_movie(
+                        t["l"])] for t in requests],
                 )
         else:
             title = " ".join(args)
@@ -147,9 +172,10 @@ class Movie(Plugin):
         print("searching...", message.target)
         title = "_".join(query).lower()
         imdb_resp = requests.get(
-            "https://v2.sg.media-imdb.com/suggests/%s/%s.json" % (title[0], title)
+            "https://v2.sg.media-imdb.com/suggests/%s/%s.json" % (
+                title[0], title)
         ).text
-        imdb_list = json.loads(imdb_resp[6 + len(title) : -1])
+        imdb_list = json.loads(imdb_resp[6 + len(title): -1])
         imdb_list = imdb_list["d"] if "d" in imdb_list else []
         imdb = False
         for movie in imdb_list:
@@ -161,10 +187,12 @@ class Movie(Plugin):
                     self.bot.msg(
                         message.target,
                         "Movie birb could not find that movie. Movie birb is sorry.",
+                        follows=message
                     )
                     return
         quality, link = self.movie_available(imdb)
-        embed = {"title": imdb["l"], "color": "bade83", "desc": "With " + imdb["s"]}
+        embed = {"title": imdb["l"], "color": "bade83",
+                 "desc": "With " + imdb["s"]}
         if quality:
             embed["url"] = "https://fmovies.cafe" + link
         if "i" in imdb:
@@ -177,6 +205,7 @@ class Movie(Plugin):
                 (message.target),
                 ("This movie is already available in `%s`." % quality),
                 embed=embed,
+                follows=message
             )
             return True
 
@@ -187,24 +216,25 @@ class Movie(Plugin):
                 self.bot.msg(
                     message.target,
                     "Ok, %s, I've updated your watchlist."
-                    % self.bot.server.mention(reaction["reactor"]),
+                    % self.bot.server.mention(reaction["reactor"])
                 )
             else:
                 self.bot.msg(
                     message.target,
                     "That movie is already on your watchlist, %s."
-                    % self.bot.server.mention(reaction["reactor"]),
+                    % self.bot.server.mention(reaction["reactor"])
                 )
 
         self.bot.msg(
             (message.target),
             (
-                "This movie is currently only available in `%s`. To be " % (quality)
+                "This movie is currently only available in `%s`. To be " % (
+                    quality)
                 + "notified when the movie is available in HDRip or better, "
                 + "ring the bell!"
             ),
             embed=embed,
-            reactions=[("🔔", handler)],
+            reactions=[("🔔", handler)], follows=message
         )
 
     def add_request(self, movie, requester, target):
@@ -247,12 +277,10 @@ class Movie(Plugin):
         } ).text
         """
         try:
-            fmovies_html = json.loads(
-                requests.get(
-                    "https://fmovies.cafe/ajax/film/search?sort=year:desc&keyword=%s"
-                    % movie["l"].replace("_", "+")
-                ).text
-            )["html"]
+            fmovies_html = requests.get(
+                "https://fmovies.cafe/search?keyword=%s"
+                % movie["l"].replace("_", "+")
+            ).text
         except requests.exceptions.ConnectionError as e:
             print(e)
             return (False, False)
@@ -261,10 +289,11 @@ class Movie(Plugin):
         soup = BeautifulSoup(fmovies_html, "html.parser")
         movies = soup.find_all(class_="item")
         for m in movies:
-            if m.find(class_="name").get_text().lower() == movie["l"].lower():
+            print(m)
+            if m.find(class_="poster")["title"].lower() == movie["l"].lower():
                 return (
                     m.find(class_="quality").get_text(),
-                    m.find(class_="name")["href"],
+                    m.find(class_="poster")["href"],
                 )
         return (False, False)
 
