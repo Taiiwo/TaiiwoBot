@@ -31,6 +31,9 @@ class TaiiwoBot:
             # for each py file in the plugins folder
             for file in files:
                 if file[-3:] == ".py":
+                    if "plugin_blacklist" in self.config:
+                        if file[:-3] in self.config["plugin_blacklist"]:
+                            continue
                     # import it
                     plugin = __import__(
                         os.path.join(root, file[:-3])
