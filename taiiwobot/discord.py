@@ -9,6 +9,8 @@ Empty = discord.Embed.Empty
 from . import util
 from .server import Server
 
+import time
+
 
 class Discord(Server):
     def __init__(self, config):
@@ -16,11 +18,16 @@ class Discord(Server):
         if missing_keys:
             quit("[E] Missing args: %s. Check config.json" % (", ").join(missing_keys))
         defaults = {}
+        self.type = "discord"
         defaults.update(config)
         self.config = defaults
         self.callbacks = {}
         self.reaction_callbacks = {}
         self.message_callbacks = {}
+        self.followed_messages = {}
+        intents = discord.Intents.default()
+        intents.members = True
+        self.client = discord.Client(intents=intents)
 
         # some logging handlers
         @self.on("message", "root")
@@ -38,9 +45,13 @@ class Discord(Server):
             )
 
         @self.client.event
-        async def on_ready():
+        async def on_connect():
             self.name = self.client.user.name
             self.trigger("ready", True)
+
+        @self.client.event
+        async def on_ready():
+            print("Finished loading members.")
 
         @self.client.event
         async def on_message(message):
@@ -117,6 +128,7 @@ class Discord(Server):
                         break
 
     def start(self):
+        print("starting discord...")
         self.client.run(self.config["api_key"])
 
     def code_block(self, text):
@@ -188,7 +200,7 @@ class Discord(Server):
                 icon_url=author_icon or Empty,
             )
         if footer:
-        e.set_footer(text=footer)
+            e.set_footer(text=footer)
         if image:
             e.set_image(url=image)
         return e
@@ -306,7 +318,7 @@ class Discord(Server):
         if message != "":
             # a list of asynchronous calls to make
             async_calls = []
-                # sending the message
+            # sending the message
             async_calls.append(
                 [target.send, (message,), {"embed": embed, "files": [discord.File(f, filename=fn) for fn, f in files]}]
             )
@@ -319,7 +331,7 @@ class Discord(Server):
                             self.followed_messages[follows.raw_message.id].delete,
                             tuple(),
                             {},
-            ]
+                        ]
                     )
                     del self.followed_messages[follows.raw_message.id]
                 # register that this message is a response
@@ -402,16 +414,14 @@ class Discord(Server):
             self.callbacks[command].remove(f)
 
     def trigger(self, event, *data):
-        print(event)
+        if event != "message":
+            print(event)
         if event in self.callbacks:
             for callback, plugin in self.callbacks[event]:
                 if hasattr(data[0], "target"):
                     if not self.plugin_valid(plugin, data[0]):
                         continue
-                try:
-                    callback(*data)
-                except util.RuntimeError as e:
-                    print(e.text)
+                callback(*data)
 
     def add_callback(self, callback, command, plugin_name):
         if command not in self.callbacks:
