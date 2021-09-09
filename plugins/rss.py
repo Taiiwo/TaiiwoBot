@@ -475,21 +475,20 @@ class RSS(Plugin):
                 if "entries" not in f:
                     # could not get feed. Disconnected from the internet?
                     continue
-                # find out where the new entries start
-                i = 0
+                entries = []
+                latest_post = feed["latest_post"]
                 for entry in f["entries"]:
-                    if feed["unique_key"] == entry["title"]:
-                        break
-                    i += 1
+                    if (
+                        parser.parse(entry["updated"], ignoretz=True)
+                        > feed["latest_post"]
+                    ):
+                        entries.append(entry)
+                        if parser.parse(entry["updated"], ignoretz=True) > latest_post:
+                            latest_post = parser.parse(entry["updated"], ignoretz=True)
                 # if there are no new entries
-                if i == 0:
+                if len(entries) == 0:
                     # no new articles, go to next feed
                     continue
-                elif i + 1 > len(f["entries"]):
-                    # we didn't find our title at all. Post all articles
-                    i = len(f["entries"])
-                # make list of only new entries
-                entries = f["entries"][:i]
                 # remove entry list from the feed to save resources
                 del f["entries"]
                 # for each new entry
