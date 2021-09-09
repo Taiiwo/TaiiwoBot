@@ -164,6 +164,7 @@ class Discord(Server):
         footer=Empty,
         color="000",
         thumbnail=Empty,
+        image=Empty,
     ):
         e = discord.Embed(title=title, url=url, description=desc, color=int(color, 16))
         if thumbnail:
@@ -174,13 +175,17 @@ class Discord(Server):
                 value=field[1],
                 inline=field[2] if len(field) > 2 and not field[2] else True,
             )
+        # only set author values if author name exists
         if author_name:
             e.set_author(
                 name=author_name,
                 url=author_link or Empty,
                 icon_url=author_icon or Empty,
             )
+        if footer:
         e.set_footer(text=footer)
+        if image:
+            e.set_image(url=image)
         return e
 
     def delete_message(self, channel, message, after=0):
