@@ -7,9 +7,9 @@ class LiberPrimus:
         if not len(args) > 0:
             with open(os.path.join(os.path.dirname(__file__), "liber_primus.txt"), encoding="utf-8") as f:
                 # omit the key
-                self.runes = f.read()
+                self.text = f.read()
         else:
-            self.runes = args[0]
+            self.text = args[0]
 
         self.delimiters = {
             "word"     : "-",
@@ -22,7 +22,7 @@ class LiberPrimus:
         }
 
     def __str__(self):
-        return self.strip_delims(self.runes)
+        return self.strip_delims(self.text)
 
     def strip_delims(self, input):
         input = input.replace("-", " ")
@@ -32,11 +32,11 @@ class LiberPrimus:
         input = input.replace("§", "")
         input = input.replace("/", "")
         input = input.replace("%", "")
-        return Runes(input.strip())
+        return input.strip()
 
     def split_by(self, delim_index):
         # split by the specified delimmiter and remove the rest
-        return [self.strip_delims(a) for a in self.runes.split(self.delimiters[delim_index])]
+        return [LiberPrimus(a) for a in self.text.split(self.delimiters[delim_index])]
 
     @property
     def pages(self):
@@ -65,6 +65,10 @@ class LiberPrimus:
     @property
     def words(self):
         return self.split_by("word")
+
+    @property
+    def runes(self):
+        return Runes(str(self))
 
 if __name__ == "__main__":
     lp = LiberPrimus()
