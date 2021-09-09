@@ -264,6 +264,8 @@ class Discord(Server):
         callback=None,
         files=[],
         delete_after=False,
+        follows=None  # the message this message is in response to. Will be tracked
+        # for message updates
     ):
         if type(target) == str:
             if target.isnumeric():
@@ -283,10 +285,29 @@ class Discord(Server):
             message = message.content
         if message != "":
             # a list of asynchronous calls to make
-            async_calls = [
+            async_calls = []
                 # sending the message
-                [target.send, (message,), {"embed": embed, "files": files}]
+            async_calls.append(
+                [target.send, (message,), {"embed": embed, "files": [discord.File(f, filename=fn) for fn, f in files]}]
+            )
+            if follows:
+                # if the message is already being followed
+                if follows.raw_message.id in self.followed_messages:
+                    # delete the old response before posting a new one
+                    async_calls.append(
+                        [
+                            self.followed_messages[follows.raw_message.id].delete,
+                            tuple(),
+                            {},
             ]
+                    )
+                    del self.followed_messages[follows.raw_message.id]
+                # register that this message is a response
+                async def follow_message(m):
+                    self.followed_messages[follows.raw_message.id] = m
+
+                async_calls.append([follow_message, ("$0",), {}])
+
             reactions = list(reactions)
             # add the reactions
             for r, f in reactions:
