@@ -466,6 +466,7 @@ class Discord(Server):
             author_id=m.author.id,
             type="message",
             target=m.channel.id,
+            server=m.guild.id if m.guild else False,
             content=m.content,
             raw_message=m,
             server_type="discord",
