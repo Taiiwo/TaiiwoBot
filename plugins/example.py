@@ -32,9 +32,9 @@ class Example(Plugin):
         # their response
         self.bot.prompt(message.target, message.author_id,
             "This is an example prompt: ",
-            lambda m: self.bot.msg(message.target, "Hello, " + m.content)
+            lambda m: self.bot.msg(message.target, "Hello, " + m.content, follows=message)
         )
 
     def say(self, message, *things, force=False):
         # sends a message to the channel it came from
-        self.bot.msg(message.target, " ".join(things))
+        self.bot.msg(message.target, " ".join(things), follows=message)

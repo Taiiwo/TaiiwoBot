@@ -44,8 +44,8 @@ class WA(Plugin):
                 # delete the conversation id and try again
                 del self.conversations[message.target]
                 return self.wa(message, *args)
-            return self.bot.msg(message.target, response["error"])
-        self.bot.msg(message.target, response["result"])
+            return self.bot.msg(message.target, response["error"], follows=message)
+        self.bot.msg(message.target, response["result"], follows=message)
         self.conversations[message.target] = {
             "conversationid": response["conversationID"]
         }
@@ -105,4 +105,4 @@ class WA(Plugin):
             message.content = message.content.replace("$wa ", cleverBotFlag)
             self.bot.server.trigger("message", message)
             """
-            self.bot.msg(message.target, "No data available.")
+            self.bot.msg(message.target, "No data available.", follows=message)

@@ -23,4 +23,4 @@ class Fact(Plugin):
         selector = "strong > i"
         soup = BeautifulSoup(html, "html.parser")
         fact = soup.select(selector)[0].getText()
-        self.bot.msg(message.target, fact)
+        self.bot.msg(message.target, fact, follows=message)

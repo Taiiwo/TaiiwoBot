@@ -20,7 +20,7 @@ class FindPhone(Plugin):
         ).listen()  # sets the on message callbacks and parses messages
 
     def main(self, message, number, *args):  # include your root flags here
-        if re.match("\d{9,11}", number):
+        if re.match(r"\d{9,11}", number):
             try:
                 jsonres = requests.get(
                     "https://api.opencnam.com/v2/phone/+"
@@ -28,17 +28,21 @@ class FindPhone(Plugin):
                     + "?format=json&account_sid=ACe3213058aed64072b21c1aad690d10f5&auth_token=AU8d8f41d2a4ae42b09cd9356dc71db3b4"
                 ).text
             except:
-                self.bot.msg(message.target, "No information found")
+                self.bot.msg(message.target, "No information found", follows=message)
                 return
             parsedjson = json.loads(jsonres)
-            toSend = "CallerID: %s; Last Updated: %s; Date Created: %s;" % (
-                parsedjson["name"],
-                parsedjson["updated"],
-                parsedjson["created"],
-            )
-            self.bot.msg(message.target, self.bot.server.code_block(toSend))
+            if "err" in jsonres:
+                self.bot.msg(message.target, "Error: %s" % jsonres["err"])
+            else:
+                toSend = "CallerID: %s; Last Updated: %s; Date Created: %s;" % (
+                    parsedjson["name"],
+                    parsedjson["updated"],
+                    parsedjson["created"],
+                )
+                self.bot.msg(message.target, self.bot.server.code_block(toSend), follows=message)
         else:
             self.bot.msg(
                 message.target,
-                "That doesn't look like a valid phone number. Please match `\d{9,11}`",
+                r"That doesn't look like a valid phone number. Please match `\d{9,11}`",
+                follows=message
             )

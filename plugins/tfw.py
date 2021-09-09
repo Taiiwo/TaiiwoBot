@@ -198,4 +198,4 @@ class TFW(Plugin):
             flavor=flavor,
             location=report["name"]
         )
-        self.bot.msg(message.target, response)
+        self.bot.msg(message.target, response, follows=message)

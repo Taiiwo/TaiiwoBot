@@ -38,4 +38,5 @@ class Help(Plugin):
                 + "Args in [] are optional, Args in <> are mandatory.\n\n"
                 + plugin_list
             ),
+            follows=message
         )
