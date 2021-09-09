@@ -418,19 +418,37 @@ class RSS(Plugin):
             if destination["keys"] == "default"
             else destination["keys"]
         )
+        # find any images from within the summary and add them to the embed
+        soup = BeautifulSoup(entry["summary"], "html.parser")
+        imgs = soup.find_all("img")
+        image = None
+        for img in imgs:
+            if not image:
+                image = img["src"]
+            img.decompose()
+        entry["summary"] = re.sub(r"<br ?/?>", "\n", str(soup))
+        entry["summary"] = re.sub(r"<!--.*-->", "", entry["summary"])
         # remove html formatting from the description
+        print(entry["summary"])
         summary = html.unescape(
-            Tomd(entry["summary"].replace("%22", '"').replace("%3E", ">")).markdown
+            Tomd(
+                "<p>"
+                + entry["summary"].replace("%22", '"').replace("%3E", ">")
+                + "</p>"
+            ).markdown.strip()
         )
         entry["summary"] = summary if summary != "" else entry["summary"]
+        entry["description"] = entry["summary"]  # alias
         # turns a key format into value string
         def format_key(t):
             v = []
+            # for each word in the value of the key if value exists
             for k in keys[t].split() if t in keys and keys[t] else []:
                 if k[0] == "$":
                     v.append(entry[k[1:]] if k[1:] in entry else None)
                 else:
                     v.append(k)
+            # if we're missing any of the values, display nothing
             return " ".join(v) if not None in v else None
 
         return self.bot.msg(
