@@ -417,6 +417,11 @@ class Discord(Server):
     def plugin_valid(self, plugin, message):
         if not isinstance(plugin, str):
             plugin = plugin.name
+        # message is a DM, and therefore cannot be blacklisted
+        if not message.raw_message.guild:
+            return True
+        if not "plugin_config" in self.config:
+            return True
         # if there's a plugin config entry for the server this
         # event is happening in
         server_id = str(message.raw_message.guild.id)
@@ -435,7 +440,7 @@ class Discord(Server):
                 # if the blacklist is just a single channel, and it's us
                 if (
                     isinstance(server_config["blacklist"][plugin], int)
-                    and data[0].target == server_config["blacklist"][plugin]
+                    and message.target == server_config["blacklist"][plugin]
                 ):
                     return False
             # what if there is a whitelist, but this channel isn't on it?
@@ -444,12 +449,12 @@ class Discord(Server):
                 if server_config["whitelist"][plugin] == True:
                     return True
                 # if channel not in list of whitelisted channels
-                if data[0].target not in server_config["whitelist"][plugin]:
+                if message.target not in server_config["whitelist"][plugin]:
                     return False
                 # if the whitelist is just a single channel and we're not it
                 if (
                     isinstance(server_config["whitelist"][plugin], int)
-                    and data[0].target != server_config["whitelist"][plugin]
+                    and message.target != server_config["whitelist"][plugin]
                 ):
                     return False
         return True
