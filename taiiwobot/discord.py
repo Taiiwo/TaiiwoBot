@@ -197,7 +197,16 @@ class Discord(Server):
             ]
         )
 
-    def menu(self, target, user, question, answers=None, ync=None, cancel=False):
+    def menu(
+        self,
+        target,
+        user,
+        question,
+        answers=None,
+        ync=None,
+        cancel=False,
+        delete_after=False,
+    ):
         if ync:
             if len(ync) != 3:
                 raise util.Error(
@@ -217,7 +226,7 @@ class Discord(Server):
             numbers = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "0⃣"]
             # if user supplies an icon to use, use that, else use a number icon
             reactions = [
-                numbers[i] if len(a) < 3 else a[0] for i, a in enumerate(zip(answers))
+                numbers[i] if len(a) < 3 else a[0] for i, a in enumerate(answers)
             ]
             # parse the answers array, ignoring the supplied icon if supplied
             answers, functions = zip(
@@ -227,7 +236,13 @@ class Discord(Server):
             question,
             "\n".join(["[%s] - %s" % (r, a) for r, a in zip(reactions, answers)]),
         )
-        self.msg(target, message, reactions=zip(reactions, functions), user=user)
+        self.msg(
+            target,
+            message,
+            reactions=zip(reactions, functions),
+            user=user,
+            delete_after=delete_after,
+        )
 
     def prompt(self, target, user, prompt, handler, cancel=False, timeout=60.0):
         cancel = cancel if cancel else lambda r: None
