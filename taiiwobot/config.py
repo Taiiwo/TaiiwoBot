@@ -37,7 +37,7 @@ class Config(dict):
             quit()
         default_config[key].update(user_config)
         for k, v in default_config[key].items():
-                super().__setitem__(k, v)
+            super().__setitem__(k, v)
 
     def save_config(self):
         with open(self.config_location, "w") as f:
