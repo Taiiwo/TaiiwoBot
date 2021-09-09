@@ -209,6 +209,16 @@ class Cookies(Plugin):
 
         class User:
             def __init__(self, user_id, db=self.db, init=False):
+                """Object that represents a cookie-having user
+
+                Args:
+                    user_id (int): user_id of user
+                    db (MongoClient, optional): The mongodb instance to reference. Defaults to self.db.
+                    init (bool, optional): Should we init the user if not exists?. Defaults to False.
+
+                Returns:
+                    [type]: [description]
+                """
                 self.id = user_id
                 self.db = db
                 self.db_user = self.db.find_one({"user": self.id})
@@ -225,12 +235,25 @@ class Cookies(Plugin):
                     self.db.insert_one(self.db_user)
 
             def cookies(self):
+                """Returns the number of cookies this user has
+
+                Returns:
+                    int: Number of cookies
+                """
                 if self.db_user:
                     return self.db_user["cookies"]
                 else:
                     return 0
 
-            def inc_cookies(self, inc):
+            def inc_cookies(self, inc: int):
+                """Increment the user's cookies by a set amount
+
+                Args:
+                    inc (int): The number of cookies to increment. Can be positive
+
+                Raises:
+                    Exception: Function cannot be used to lower a user below 0 cookies
+                """
                 # init user with inc cookies if not exists
                 if not self.db_user:
                     if inc:
@@ -248,7 +271,13 @@ class Cookies(Plugin):
                     raise Exception(
                         "Existing user cannot have negative cookies!")
 
-            def add_item(self, item, quantity=1):
+            def add_item(self, item: str, quantity=1):
+                """Gives the user an item
+
+                Args:
+                    item (str): The emoji of the desired item
+                    quantity (int, optional): The amount of item to give. Defaults to 1.
+                """
                 if "items" not in self.db_user:
                     self.db_user["items"] = {}
                 if item[1] in self.db_user["items"]:
@@ -258,12 +287,25 @@ class Cookies(Plugin):
                 self.update()
 
             def get_items(self):
+                """Returns the items the user owns
+
+                Returns:
+                    Dict: List of items the user owns
+                """
                 return self.db_user["items"]
 
             def update(self):
+                """Apply updates to self.db_user to the database
+                """
                 self.db.update({"user": self.id}, {"$set": self.db_user})
 
             def consume(self, emoji, context):
+                """Consumes the target emoji, handing inventory and applying effects
+
+                Args:
+                    emoji (str): The emoji to apply
+                    context (Message): Some message object to use as context
+                """
                 if (
                     bot.server.type == "discord"
                     and context.guild.me.guild_permissions.manage_roles
@@ -382,6 +424,11 @@ class Cookies(Plugin):
             self.bot.msg(message.target, "You can't do that!")
 
     def test(self, message):
+        """An example of a method of dropping cookies that makes it harder to automate collection
+
+        Args:
+            message (Message): message object
+        """
         user = self.User(message.author)
         if message.author != 200329561437765652:
             self.bot.msg(
