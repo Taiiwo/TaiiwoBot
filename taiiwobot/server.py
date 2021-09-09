@@ -55,7 +55,7 @@ class Server:
         self.msg(target, message, reactions=zip(reactions, functions), user=user)
 
     def prompt(self, target, user, prompt, handler, cancel=False, timeout=60.0):
-        self.msg(target, prompt, reactions=[["❌", cancel_wrapper]], user=user)
+        self.msg(target, prompt, reactions=[["❌", cancel]], user=user)
         self.message_callbacks[target + ":" + user] = [time.time(), handler, timeout]
 
     # event handler handling
