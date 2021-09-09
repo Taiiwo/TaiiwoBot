@@ -35,11 +35,8 @@ class Config(dict):
             else:
                 print("[i] A config file is required to run TaiiwoBot")
             quit()
-        default_config.update(user_config)
+        default_config[key].update(user_config)
         for k, v in default_config[key].items():
-            if self.key:
-                super().__setitem__(k, v)
-            else:
                 super().__setitem__(k, v)
 
     def save_config(self):
