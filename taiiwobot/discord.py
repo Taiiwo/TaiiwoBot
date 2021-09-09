@@ -372,6 +372,10 @@ class Discord(Server):
             return "<@%s>" % target
         return str(target)
 
+    # gets the user mentions from a string
+    def get_mentions(self, message):
+        return [m.id for m in message.raw_message.mentions]
+
     def me(self):
         return self.client.user.id
 
