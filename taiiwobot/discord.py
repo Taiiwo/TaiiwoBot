@@ -117,6 +117,41 @@ class Discord(Server):
     def code_block(self, text):
         return "```" + text + "```"
 
+    def is_owner(self, message):
+        if "owner" in self.config and message.author == self.config["owner"]:
+            return True
+        elif message.raw_message.guild.owner.id == message.author:
+            return True
+        else:
+            return False
+
+    def is_mod(self, message):
+        for role in message.raw_message.author.roles:
+            # allow the bot owner
+            if message.author == self.config["owner"]:
+                return True
+            # allow users with the specified roles
+            if str(message.server) in self.config["plugin_config"]:
+                server_config = self.config["plugin_config"][str(message.server)]
+            else:
+                # TODO: this should be a RuntimeError but I couldn't be bothered
+                self.msg(
+                    message.target,
+                    "This server has no authenticated roles assigned. "
+                    + "Please get the server owner to add one with `$mod set-role @role`",
+                )
+            if "mod_roles" not in server_config:
+                return False
+            if (
+                role.id
+                in self.config["plugin_config"][str(message.server)]["mod_roles"]
+            ):
+                return True
+            # we could potentially check for a discord permission here instead, but
+            # idk which one would appropriately fit the ability to manage the bot.
+            # maybe "manage server"
+        return False
+
     def embed(
         self,
         title=Empty,
