@@ -72,6 +72,7 @@ class Discord(Server):
 
         @self.client.event
         async def on_message_edit(before, after):
+            # if the message is being followed, treat it as a new message
             before = self.format_message(before)
             after = self.format_message(after)
             self.trigger("message-edit", before, after)
