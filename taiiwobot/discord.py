@@ -72,7 +72,11 @@ class Discord(Server):
 
         @self.client.event
         async def on_message_edit(before, after):
+            # fix a weird quirk where after.author is always user instead of member
+            after.author = before.author
             # if the message is being followed, treat it as a new message
+            # if before.id in self.followed_messages:
+            await on_message(after)
             before = self.format_message(before)
             after = self.format_message(after)
             self.trigger("message-edit", before, after)
