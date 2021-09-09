@@ -17,7 +17,7 @@ class LiberPrimus(Plugin):
             [  # Flags: "<short form> <long form> <description> <1=string or 0=bool>"
                 "l latin returns the page in latin form 0",
                 "n number returns the page in number form 0",
-                "b book Select book 1 or 2 1",
+                "p part Select part 1 or 2 1",
                 "i image Returns page image instead 0",
             ],
             self.page,  # root function
@@ -28,7 +28,7 @@ class LiberPrimus(Plugin):
                     [
                         "l latin returns the page in latin form 0",
                         "n number returns the page in number form 0",
-                        "b book Select book 1 or 2 1",
+                        "p part Select part 1 or 2 1",
                         "i image Returns page image instead 0",
                     ],  # subcommand flags
                     self.page,  # subcommand function
@@ -46,14 +46,14 @@ class LiberPrimus(Plugin):
         *args,
         latin=False,
         number=False,
-        book="2",
+        part="2",
         image=False
     ):
-        if book.isnumeric():
-            book = int(book)
+        if part.isnumeric():
+            part = int(part)
         else:
             raise self.bot.util.RuntimeError(
-                "Invalid book number", message.target, self
+                "Invalid part number", message.target, self
             )
         if page_number.isnumeric():
             page_number = int(page_number)
@@ -63,15 +63,15 @@ class LiberPrimus(Plugin):
             )
         if (
             page_number < 0
-            or (page_number > 16 and book == 1)
-            or (page_number > 57 and book == 2)
+            or (page_number > 16 and part == 1)
+            or (page_number > 57 and part == 2)
         ):
             print(page_number)
             raise self.bot.util.RuntimeError(
                 "Invalid page number", message.target, self
             )
         if image:
-            if book == 1:
+            if part == 1:
                 if page_number == 1:
                     page_number = 2
                 elif page_number == 2:
@@ -84,27 +84,39 @@ class LiberPrimus(Plugin):
                     page_number = 3
                 self.bot.msg(
                     message.target,
-                    "http://opensource.exposed/images/LP1_%s.jpg" % (page_number),
+                    "https://opensource.cicada.gq/images/LP1_%s.jpg" % (page_number),
+                    follows=message,
                 )
             else:
                 self.bot.msg(
                     message.target,
-                    "http://opensource.exposed/images/%s.jpg" % (page_number),
+                    "https://opensource.cicada.gq/images/%s.jpg" % (page_number),
+                    follows=message,
                 )
             return
-        if book == 1 and page_number == 0:
-            self.bot.msg(message.target, self.bot.server.code_block("Liber Primus"))
+        if part == 1 and page_number == 0:
+            self.bot.msg(
+                message.target,
+                self.bot.server.code_block("Liber Primus"),
+                follows=message,
+            )
             return
-        elif book == 1 and page_number == 1:
+        elif part == 1 and page_number == 1:
             page_number = 0
-        elif book == 1 and page_number == 2:
-            self.bot.msg(message.target, self.bot.server.code_block("Chapter 1\nIntus"))
+        elif part == 1 and page_number == 2:
+            self.bot.msg(
+                message.target,
+                self.bot.server.code_block("Chapter 1\nIntus"),
+                follows=message,
+            )
             return
         else:
             page_number -= 2
-        page = self.lp.pages[(15 if book == 2 else 0) + int(page_number)]
+        page = self.lp.pages[(17 if part == 2 else 0) + int(page_number)]
         if latin:
-            page = page.to_latin()
+            page = page.runes.to_latin()
         if number:
-            page = page.to_number()
-        self.bot.msg(message.target, self.bot.server.code_block(page.text))
+            page = page.runes.to_numbers()
+        self.bot.msg(
+            message.target, self.bot.server.code_block(str(page)), follows=message
+        )
