@@ -113,10 +113,12 @@ class RSS(Plugin):
                     )
             feed = existing_feed
         else:
+            post_times = sorted(
+                [parser.parse(e["updated"]) for e in feed_sample["entries"]]
+            )
             feed = {
                 "url": url,
-                # TODO: potentially add a better way of identifying entries uniquely
-                "unique_key": feed_sample["entries"][0]["title"],
+                "latest_post": post_times[-1],
                 "destinations": [],
             }
         destination = {
@@ -127,7 +129,10 @@ class RSS(Plugin):
         entry = feed_sample["entries"][0]
         entry.update({"feed:" + k: v for k, v in feed_sample.items()})
         # post a sample of the feed
-        self.post_entry(destination, entry)
+        self.post_entry(
+            {"target": message.target, "keys": "default", "conditions": [conditions],},
+            entry,
+        )
         # callback function for if the user hits "yes" in the following menu
         def yes(r):
             # the user decided the feed looked good
