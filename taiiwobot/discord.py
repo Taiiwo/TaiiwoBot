@@ -382,6 +382,11 @@ class Discord(Server):
     # event handler handling
     def on(self, command, plugin_name):
         def handler(f):
+            # remove old handlers from this plugin
+            if command in self.callbacks:
+                for callback in self.callbacks[command]:
+                    if callback[1] == plugin_name:
+                        self.callbacks[command].remove(callback)
             self.add_callback(f, command, plugin_name)
 
         return handler
