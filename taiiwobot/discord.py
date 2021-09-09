@@ -351,6 +351,12 @@ class Discord(Server):
             self.gaysyncio(async_calls)
             self.trigger("sent", target, message, embed)
 
+    def add_reaction(self, emoji, message):
+        async def add_reaction(message, reaction):
+            return await message.add_reaction(reaction)
+
+        self.gaysyncio([[add_reaction, (message.raw_message, emoji), {}]])
+
     def join(self, channel):
         pass
 
