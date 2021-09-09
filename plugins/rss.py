@@ -456,13 +456,14 @@ class RSS(Plugin):
             format_key("message") + " ",
             embed=self.bot.server.embed(
                 title=format_key("title"),
-                desc=format_key("desc"),
+                desc=format_key("desc")[:2047],
                 author_name=format_key("author_name"),
                 author_link=format_key("author_link"),
                 author_icon=format_key("author_icon"),
                 footer=format_key("footer"),
                 url=format_key("url"),
                 color=format_key("color"),
+                image=image,
             ),
         )
 
