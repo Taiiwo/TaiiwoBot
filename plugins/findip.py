@@ -71,4 +71,4 @@ class FindIP(Plugin):
             if not str(port) in ports:
                 ports.append(str(port))
         output.append("Open ports: " + ", ".join(ports))
-        self.bot.msg(message.target, self.bot.server.code_block("\n".join(output)))
+        self.bot.msg(message.target, self.bot.server.code_block("\n".join(output)), follows=message)
