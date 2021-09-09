@@ -12,7 +12,7 @@ class Gematria(Plugin):
         self.bot = bot
         self.lp = cicada.LiberPrimus()
         self.interface = bot.util.Interface(
-            "gm",  # command name
+            "gp",  # command name
             # plugin description
             "translates runes and latin using the Gematria Primus.",
             [  # Flags: "<short form> <long form> <description> <1=string or 0=bool>"
@@ -86,11 +86,12 @@ class Gematria(Plugin):
         else:
             input = Latin(" ".join(args))
         n = input.gematria_sum()
-        self.bot.msg(message.target, n)
-        if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
-            self.bot.msg(message.target, "It's also prime!")
-            if all(n % p != 0 for p in range(2, int(math.sqrt(int(str(n)[::-1]))) + 1)):
-                self.bot.msg(message.target, "!emirp osla s'tI")
+        self.bot.msg(message.target, n, follows=message)
+        if n not in [0, 1] and all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
+            self.bot.msg(message.target, "It's also prime!", follows=message)
+            n = int(str(n)[::-1])
+            if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
+                self.bot.msg(message.target, "!emirp osla s'tI", follows=message)
 
     def sum_index(self, message, *args, runes=False):
         if runes:
@@ -98,8 +99,9 @@ class Gematria(Plugin):
         else:
             input = Latin(" ".join(args))
         n = sum(input.to_runes().to_index())
-        self.bot.msg(message.target, n)
-        if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
-            self.bot.msg(message.target, "It's also prime!")
-            if all(n % p != 0 for p in range(2, int(math.sqrt(int(str(n)[::-1]))) + 1)):
-                self.bot.msg(message.target, "!emirp osla s'tI")
+        self.bot.msg(message.target, n, follows=message)
+        if n not in [0, 1] and all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
+            self.bot.msg(message.target, "It's also prime!", follows=message)
+            n = int(str(n)[::-1])
+            if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
+                self.bot.msg(message.target, "!emirp osla s'tI", follows=message)
