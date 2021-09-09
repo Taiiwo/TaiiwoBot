@@ -4,7 +4,9 @@ import time
 import re
 from tomd import Tomd
 import html
+from bs4 import BeautifulSoup
 from taiiwobot.plugin import Plugin
+from dateutil import parser
 
 
 class RSS(Plugin):
@@ -68,7 +70,8 @@ class RSS(Plugin):
         # self.bot.msg(message.target, "%s %s %s" % (output, force, quiet))
         self.interface.help(message.target, self)
 
-    def add(self, message, url=None, target="", conditions=""):
+    @Plugin.authenticated
+    def add(self, message, url, target="", conditions=""):
         if not url:
             raise self.bot.util.RuntimeError(
                 "Missing argument: url. Usage: $rss add [flags] <url>",
