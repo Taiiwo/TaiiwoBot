@@ -154,6 +154,7 @@ class RSS(Plugin):
             ync=[yes, lambda r: yes(r) + self.edit(message, url), lambda r: None],
         )
 
+    @Plugin.authenticated
     def delete(self, message, *args, target=None):
         url = args[0]
         if not url:
@@ -173,6 +174,7 @@ class RSS(Plugin):
             # delete this destination
             self.feeds_col.update(feed, {"$pull": {"destination": {"target": target}}})
 
+    @Plugin.authenticated
     def edit(
         self,
         message,
@@ -269,8 +271,10 @@ class RSS(Plugin):
                 if d["keys"] == "default":
                     d["keys"] = self.default_settings
                 d["keys"][edit_attribute] = value
+                sample_d = d.copy()
+                sample_d["target"] = message.target
                 # post an example for the user to validate
-                self.post_entry(d, sample_entry)
+                self.post_entry(sample_d, sample_entry)
                 # if the users says yes
                 def yes(r):
                     # write the new destination to the database
@@ -519,9 +523,7 @@ class RSS(Plugin):
                             # entry does not match the conditions for this dest
                             continue
                         self.post_entry(destination, entry)
-                self.feeds_col.update(
-                    feed, {"$set": {"unique_key": entries[0]["title"]}}
-                )
+                self.feeds_col.update(feed, {"$set": {"latest_post": latest_post}})
             time.sleep(60 * 10)
 
     def unload(self):
