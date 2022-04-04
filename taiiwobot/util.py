@@ -1,3 +1,4 @@
+from concurrent.futures import process
 import pymongo
 import requests
 import sys
@@ -64,6 +65,7 @@ class Message:
         timestamp=None,
         server_type=None,
         embeds=[],
+        components=[],
         attachments=[],
         ident=None,
     ):
@@ -81,6 +83,7 @@ class Message:
         self.timestamp = timestamp
         self.attachments = attachments
         self.embeds = embeds
+        self.components = components
 
 
 class Interface:
