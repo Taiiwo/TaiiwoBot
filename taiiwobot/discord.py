@@ -1,7 +1,6 @@
 import asyncio
 import discord
 import time
-import re
 from bson import Int64
 
 Empty = discord.Embed.Empty
@@ -291,6 +290,7 @@ class Discord(Server):
         target,
         message,
         embed=None,
+        components=[],
         reactions=tuple(),
         user=None,
         callback=None,
@@ -320,7 +320,7 @@ class Discord(Server):
             async_calls = []
             # sending the message
             async_calls.append(
-                [target.send, (message,), {"embed": embed, "files": [discord.File(f, filename=fn) for fn, f in files]}]
+                [target.send, (message,), {"embed": embed, "components": components, "files": [discord.File(f, filename=fn) for fn, f in files]}]
             )
             if follows:
                 # if the message is already being followed
@@ -487,7 +487,8 @@ class Discord(Server):
             server_type="discord",
             timestamp=m.created_at,
             embeds=m.embeds,
-            attachments=m.attachments,
+            components=m.components,
+            attachments=m.attachments
         )
 
     def gaysyncio(self, calls):
