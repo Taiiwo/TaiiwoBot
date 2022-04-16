@@ -16,7 +16,7 @@ class Code(Plugin):
             [],
             self.run,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "man",
                     "Gets linux manpages from man.cs. Args: <query>",
                     [],

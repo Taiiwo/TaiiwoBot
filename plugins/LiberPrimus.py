@@ -22,7 +22,7 @@ class LiberPrimus(Plugin):
             ],
             self.page,  # root function
             subcommands=[  # list of subcommands
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "page",  # invoked with $template sub <args/flags>
                     "Retrieves and translates pages of the Liber Primus. Args: <page_number>",
                     [

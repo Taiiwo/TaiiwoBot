@@ -12,18 +12,18 @@ class Check(Plugin):
             [],
             self.hash,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "hash", "Hashes text or webpage at URL and compares it to the deep web hash", [
                         "u url URL to check 1",
-                        "v verbose Return the hash products 0"
+                        "v verbose Return the hash products 0",
                     ], self.hash,
                 ),
-                #bot.util.Interface(
+                # bot.util.Interface(
                 #    "pgp", "verifies PGP signature for affiliation with 3301", [], self.pgp,
-                #),
-                #bot.util.Interface(
+                # ),
+                # bot.util.Interface(
                 #    "outguess", "Reveals if an image has outguess data", [], self.outguess,
-                #),
+                # ),
             ],
         ).listen()
         self.dwh = [

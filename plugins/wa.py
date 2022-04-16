@@ -19,7 +19,7 @@ class WA(Plugin):
             ["q quiet responds with only one line of output 0"],
             self.wa,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "report",
                     "Generates a visual report on the query",
                     [],

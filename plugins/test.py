@@ -11,10 +11,10 @@ class Test(Plugin):
             [],
             self.some_func,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "owner-test", "checks if user is an owner", [], self.owner,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "mod-test", "checks if user is a mod", [], self.mod,
                 ),
             ],

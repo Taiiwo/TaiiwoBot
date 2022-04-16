@@ -18,7 +18,7 @@ class RSS(Plugin):
             [],
             self.root,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "add",
                     "Adds an RSS feed to listen to. Usage: $rss add [flags] <url>",
                     [
@@ -27,13 +27,13 @@ class RSS(Plugin):
                     ],
                     self.add,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "remove",
                     "Removes an RSS feed from the target channel. Usage $rss remove [flags] <url>",
                     ["t target The target channel to delete the feeds from 1"],
                     self.delete,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "edit",
                     "Edits the way a feed is managed. Usage $rss edit [flags] <url>",
                     [

@@ -16,19 +16,19 @@ class Movie(Plugin):
             [],
             self.search,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "search",
                     "Search for a movie Args: search_query (default command)",
                     [],
                     self.search,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "watchlist",
                     "Display your watchlist. Args: [user]",
                     [],
                     self.watchlist,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "delete",
                     "Delete a movie from your watchlist. Args: [movie_title]",
                     [],

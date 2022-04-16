@@ -84,6 +84,8 @@ class Message:
 
 
 class Interface:
+    is_subcommand = False
+
     def __init__(
         self,
         name,
@@ -91,7 +93,6 @@ class Interface:
         flag_info,
         func,
         subcommands=[],
-        is_subcommand=False,
         prefix="$",
     ):
         self.prefix = prefix
@@ -99,21 +100,20 @@ class Interface:
         self.desc = desc
         self.func = func
         self.plugin = func.__self__
-        self.subcommands = []
-        for subcommand in subcommands:
-            subcommand.is_subcommand = True
-            self.subcommands.append(subcommand)
-        self.is_subcommand = is_subcommand
+        self.subcommands = subcommands
         try:
             self.flag_info = [
                 [x[0], x[1].replace("-", "_"), " ".join(x[2:-1]), int(x[-1])]
                 for x in [b.split() for b in flag_info]
             ]
         except ValueError as e:
-            raise Error("The last word of a flag string must be an integer", e) from e
+            raise Error(
+                "The last word of a flag string must be an integer", e) from e
         self.flags = []
         # make a list of all our flags
         [self.flags.extend(i[0:2]) for i in self.flag_info]
+        if not self.is_subcommand:
+            self.plugin.bot.server.register_command(self)
 
     # listen for messages
     def listen(self):
@@ -126,11 +126,10 @@ class Interface:
 
         return self
 
-    def add_subcommand(self, interface):
+    def add_subcommand(self, subcommand):
         if not self.subcommands:
             self.subcommands = []
-        interface.is_subcommand = True
-        self.subcommands.append(interface)
+        self.subcommands.append(subcommand)
 
     # posts the help message for this command into the chat
     def help(self, target, plugin):
@@ -180,7 +179,7 @@ class Interface:
         # skip the first arg because it's the name of the command
         i = 1
         # if command != our command name (omitting prefix if we're a subcommand)
-        if args[0] != self.prefix * (not self.is_subcommand) + self.name:
+        if not args or args[0] != self.prefix * (not self.is_subcommand) + self.name:
             # this message does not refer to this interface
             return False
         while i < len(args):
@@ -232,7 +231,7 @@ class Interface:
                         while i < len(args):
                             if args[i][-1] == '"':
                                 # we found the end
-                                quote = (value + " ".join(args[start + 1 : i + 1]))[
+                                quote = (value + " ".join(args[start + 1: i + 1]))[
                                     1:-1
                                 ]
                                 break
@@ -255,7 +254,8 @@ class Interface:
                     # this arg looks like a flag, but actually is not
                     raise RuntimeError(
                         "Flag %s does not exist. If it was intended as an "
-                        "argument, you must escape it like `\\\\%s`" % (arg, arg),
+                        "argument, you must escape it like `\\\\%s`" % (
+                            arg, arg),
                         o_message.target,
                         self.func.__self__,
                     )
@@ -275,6 +275,10 @@ class Interface:
         return resp
 
 
+class Subcommand(Interface):
+    is_subcommand = True
+
+
 def interface_test():
     def test(*x, **y):
         return x, y
@@ -286,7 +290,8 @@ def interface_test():
         lambda *x, **y: (x, y),
         subcommands=[
             Interface(
-                "sub_test", "This is a test subcommand", [], lambda *x, **y: (x, y)
+                "sub_test", "This is a test subcommand", [
+                ], lambda *x, **y: (x, y)
             )
         ],
     )
@@ -318,7 +323,8 @@ def interface_test():
             Message(content="$test test -t"),
             (tuple(), {"test": True}),
         ],  # testing sub command recurrsion
-        [Message(content="$test test test test -t"), (tuple(), {"test": True})],  # hmmm
+        [Message(content="$test test test test -t"),
+         (tuple(), {"test": True})],  # hmmm
     ]
     for test in message_tests:
         r = interface.process(test[0])

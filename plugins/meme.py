@@ -32,11 +32,12 @@ class Meme(Plugin):
 
         self.interface = bot.util.Interface(
             "meme",  # plugin name
-            "Makes memes using templates. Meme text is newline delimited Usage: $meme <template> <text>",  # plugin description
+            # plugin description
+            "Makes memes using templates. Meme text is newline delimited Usage: $meme <template> <text>",
             [],
             self.meme,  # main function
             subcommands=[
-                self.bot.util.Interface(
+                self.bot.util.Subcommand(
                     "templates",
                     "Lists available meme templates",
                     [],

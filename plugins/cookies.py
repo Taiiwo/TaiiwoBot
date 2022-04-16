@@ -38,51 +38,51 @@ class Cookies(Plugin):
             [],
             self.some_func,  # main function
             subcommands=[  # list of subcommands
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "balance",  # invoked with $template sub <args/flags>
                     # subcommand description
                     "Check your cookie balance. Args: [uid]",
                     [],
                     self.balance,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "summon",  # invoked with $template sub <args/flags>
                     # subcommand description
                     "Summons a cookie, for testing and displays of admin dominance",
                     [],
                     self.summon,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "drop",  # invoked with $template sub <args/flags>
                     "Drops one of your cookies into the channel",  # subcommand description
                     [],
                     self.drop,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "shop",  # invoked with $template sub <args/flags>
                     "Opens the cookie shop",  # subcommand description
                     [],
                     self.shop,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "give",  # invoked with $template sub <args/flags>
                     "Pay someone in cookie. Args: <@recipient> <amount>",  # subcommand description
                     [],
                     self.give,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "test",  # invoked with $template sub <args/flags>
                     "Test the new cookie drop method",  # subcommand description
                     [],
                     self.test,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "lunchbox",  # invoked with $template sub <args/flags>
                     "Check the contents of your lunchbox",  # subcommand description
                     [],
                     self.lunchbox,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "offer",
                     "Offer to trade a number of cookies for something out of someone's lunchbox. Args: <target>",
                     [
@@ -92,7 +92,7 @@ class Cookies(Plugin):
                     ],
                     self.offer,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "dice",
                     "Gamble your cookies in a dice game! Args: <amount>",
                     [
@@ -113,7 +113,7 @@ class Cookies(Plugin):
                 or message.raw_message.author.bot
             ):
                 return False
-            roll = random.randint(0, 409600)
+            roll = random.randint(0, 819200)
             if roll < 1:
                 self.bot.msg(
                     message.target,

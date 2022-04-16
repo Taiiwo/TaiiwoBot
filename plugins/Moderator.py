@@ -62,9 +62,10 @@ class Moderator(Plugin):
             [],
             self.root,  # main function
             subcommands=[  # list of subcommands
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "mute",  # invoked with $template sub <args/flags>
-                    "Mutes a user for a specified time. Usage: $mod mute [<user>...]",  # subcommand description
+                    # subcommand description
+                    "Mutes a user for a specified time. Usage: $mod mute [<user>...]",
                     [
                         "f forever Mute the user forever 0",
                         "d days Number of days the user is muted for 1",
@@ -74,7 +75,7 @@ class Moderator(Plugin):
                     ],  # subcommand flags
                     self.mute,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "ban",
                     "Bans a user for a specified period of time. Usage $mod ban [<user>...]",
                     [
@@ -86,13 +87,13 @@ class Moderator(Plugin):
                     ],
                     self.ban,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "add-role",
                     "adds a mod role for this server. Args: <role>",
                     [],
                     self.add_role_command,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "remove-role",
                     "removes a mod role for this server. Args: <role>",
                     [],

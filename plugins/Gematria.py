@@ -20,7 +20,7 @@ class Gematria(Plugin):
             ],
             self.main,  # root function
             subcommands=[  # list of subcommands
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "runes",  # invoked with $template sub <args/flags>
                     "Translates string to runes Args: <string>",  # subcommand description
                     [
@@ -28,7 +28,7 @@ class Gematria(Plugin):
                     ],  # subcommand flags
                     self.runes,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "latin",  # invoked with $template sub <args/flags>
                     "Translates string to latin Args: <string>",  # subcommand description
                     [
@@ -36,7 +36,7 @@ class Gematria(Plugin):
                     ],  # subcommand flags
                     self.latin,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "sum",  # invoked with $template sub <args/flags>
                     "Returns the gematria sum for a string: <string>",  # subcommand description
                     [
@@ -44,7 +44,7 @@ class Gematria(Plugin):
                     ],  # subcommand flags
                     self.sum,  # subcommand function
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "sum_index",  # invoked with $template sub <args/flags>
                     "Returns the sum of indexes for a string: <string>",  # subcommand description
                     [

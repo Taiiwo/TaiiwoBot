@@ -18,16 +18,16 @@ class LastFm(Plugin):
             ["r rhythm Command rhythm to play your now playing song 0"],
             self.fm,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "link",
                     "Links your last.fm account to your discord account",
                     [],
                     self.link,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "profile", "Displays your Last.FM profile", [], self.profile,
                 ),
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "yt",
                     "Posts a youtube link for your nowplaying song or query. Args: [keywords]",
                     [],
