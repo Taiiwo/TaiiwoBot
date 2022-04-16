@@ -198,7 +198,7 @@ class Cookies(Plugin):
                     reactions=(("🍵", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 4098:
+            elif roll < 8192:
                 # cookie
                 self.bot.msg(
                     message.target,
@@ -256,7 +256,7 @@ class Cookies(Plugin):
                 """
                 # init user with inc cookies if not exists
                 if not self.db_user:
-                    if inc:
+                    if inc >= 0:
                         self.init(cookies=inc)
                         return
                     else:
@@ -284,6 +284,8 @@ class Cookies(Plugin):
                     self.db_user["items"][item[1]] += quantity
                 else:
                     self.db_user["items"][item[1]] = quantity
+                if self.db_user["items"][item[1]] <= 0:
+                    del self.db_user["items"][item[1]]
                 self.update()
 
             def get_items(self):
@@ -618,7 +620,11 @@ class Cookies(Plugin):
         )
 
     def dice(self, message, *args, payout=False, under=False, over=False):
-        amount = args[0]
+        amount = int(args[0])
+        if amount <= 0:
+            raise self.bot.util.RuntimeError(
+                "Invalid quantity", message.target, self
+            )
         roll = random.randint(1, 100)
         if payout:
             if payout.isnumeric() and int(payout) > 0:
@@ -655,31 +661,31 @@ class Cookies(Plugin):
                 amount,
                 100 - int(under) if over else under,
                 "over" if over else "under",
-                math.floor(int(amount) * payout),
+                math.floor(amount * payout),
                 100 - roll if over else roll,
             ),
         )
         user = self.User(message.author)
-        if user.cookies() < int(amount):
+        if user.cookies() < amount:
             self.bot.msg(message.target,
                          "You don't have enough cookies to make that bet!")
             return
-        user.inc_cookies(-int(amount))
+        user.inc_cookies(-amount)
         bot = self.User(self.bot.server.me())
-        bot.inc_cookies(int(amount))
+        bot.inc_cookies(amount)
         if roll <= under:
             self.bot.msg(
                 message.target,
-                "You win %s cookies!" % (math.floor(int(amount) * payout)),
+                "You win %s cookies!" % (math.floor(amount * payout)),
             )
             user = self.User(message.author)
-            user.inc_cookies(math.floor(int(amount) * payout))
+            user.inc_cookies(math.floor(amount * payout))
             bot = self.User(self.bot.server.me())
-            if bot.cookies() - math.floor(int(amount) * payout) <= 0:
+            if bot.cookies() - math.floor(amount * payout) <= 0:
                 bot.db_user["cookies"] = 0
                 bot.update()
             else:
-                bot.inc_cookies(-math.floor(int(amount) * payout))
+                bot.inc_cookies(-math.floor(amount * payout))
         else:
             self.bot.msg(message.target, "You lose!")
 
