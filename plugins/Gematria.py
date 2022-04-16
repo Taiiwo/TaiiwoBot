@@ -67,7 +67,8 @@ class Gematria(Plugin):
             runes = input.to_runes().substitute(alpha, alpha[::-1])
         else:
             runes = input.to_runes().text
-        self.bot.msg(message.target, self.bot.server.code_block(runes), follows=message)
+        self.bot.msg(message.target, self.bot.server.code_block(
+            runes), follows=message)
 
     def latin(self, message, *args, numeric=False, atbash=False):
         string = " ".join(args)
@@ -78,7 +79,8 @@ class Gematria(Plugin):
             latin = Runes(input.substitute(alpha, alpha[::-1])).to_latin().text
         else:
             latin = input.to_latin().text
-        self.bot.msg(message.target, self.bot.server.code_block(latin), follows=message)
+        self.bot.msg(message.target, self.bot.server.code_block(
+            latin), follows=message)
 
     def sum(self, message, *args, runes=False):
         if runes:
@@ -91,7 +93,8 @@ class Gematria(Plugin):
             self.bot.msg(message.target, "It's also prime!", follows=message)
             n = int(str(n)[::-1])
             if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
-                self.bot.msg(message.target, "!emirp osla s'tI", follows=message)
+                self.bot.msg(message.target, "!emirp osla s'tI",
+                             follows=message)
 
     def sum_index(self, message, *args, runes=False):
         if runes:
@@ -104,4 +107,5 @@ class Gematria(Plugin):
             self.bot.msg(message.target, "It's also prime!", follows=message)
             n = int(str(n)[::-1])
             if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1)):
-                self.bot.msg(message.target, "!emirp osla s'tI", follows=message)
+                self.bot.msg(message.target, "!emirp osla s'tI",
+                             follows=message)

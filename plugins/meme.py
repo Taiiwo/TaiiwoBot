@@ -74,7 +74,8 @@ class Meme(Plugin):
             "text1": text[1],
         }
         data.update({"boxes[%s][text]" % i: t for i, t in enumerate(text)})
-        res = requests.post("https://api.imgflip.com/caption_image", data=data,)
+        res = requests.post(
+            "https://api.imgflip.com/caption_image", data=data,)
         res = json.loads(res.text)
         if res["success"]:
             self.bot.msg(message.target, res["data"]["url"], follows=message)

@@ -84,13 +84,15 @@ class LiberPrimus(Plugin):
                     page_number = 3
                 self.bot.msg(
                     message.target,
-                    "https://opensource.cicada.gq/images/LP1_%s.jpg" % (page_number),
+                    "https://opensource.cicada.gq/images/LP1_%s.jpg" % (
+                        page_number),
                     follows=message,
                 )
             else:
                 self.bot.msg(
                     message.target,
-                    "https://opensource.cicada.gq/images/%s.jpg" % (page_number),
+                    "https://opensource.cicada.gq/images/%s.jpg" % (
+                        page_number),
                     follows=message,
                 )
             return

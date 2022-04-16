@@ -45,7 +45,8 @@ class Code(Plugin):
             if message.raw_message.reactions:
                 for r in message.raw_message.reactions:
                     if r.emoji == "🏃" and r.count >= 2:
-                        self.bot.server.trigger("reaction", r, r.message.author)
+                        self.bot.server.trigger(
+                            "reaction", r, r.message.author)
             else:
                 emoji = "🏃"
                 print(emoji)
@@ -60,7 +61,8 @@ class Code(Plugin):
             ):
                 return
             message = self.bot.server.format_message(reaction.message)
-            m = re.match(r"```(\w+)\n(.*)```", message.content, flags=re.DOTALL)
+            m = re.match(r"```(\w+)\n(.*)```",
+                         message.content, flags=re.DOTALL)
             if not m:
                 raise self.bot.util.RuntimeError(
                     "Not a valid codeblock", message.target, self

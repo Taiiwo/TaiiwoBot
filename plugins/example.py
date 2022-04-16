@@ -1,5 +1,6 @@
 from taiiwobot import Plugin
 
+
 class Example(Plugin):
     def __init__(self, bot):
         self.bot = bot
@@ -7,7 +8,7 @@ class Example(Plugin):
             "example",  # plugin name
             "This is a demo plugin you can use to learn how plugins work",  # plugin description
             [  # Flags: <short form> <long form> <description> <1=string or 0=bool>
-            # these will be loaded as kwargs to your main function
+                # these will be loaded as kwargs to your main function
                 "o output Specifies the location of the output file 1",
                 "f force Forces the action 0",
                 "q quiet Does the action quietly 0"
@@ -31,9 +32,10 @@ class Example(Plugin):
         # asks the user for some text, runs the handler function with
         # their response
         self.bot.prompt(message.target, message.author_id,
-            "This is an example prompt: ",
-            lambda m: self.bot.msg(message.target, "Hello, " + m.content, follows=message)
-        )
+                        "This is an example prompt: ",
+                        lambda m: self.bot.msg(
+                            message.target, "Hello, " + m.content, follows=message)
+                        )
 
     def say(self, message, *things, force=False):
         # sends a message to the channel it came from

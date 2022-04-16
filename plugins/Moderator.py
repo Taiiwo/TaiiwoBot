@@ -16,13 +16,15 @@ class Moderator(Plugin):
         self.db = self.bot.util.get_db()["admin"]
 
         async def delete_entry(entry):
-            self.db.remove_all({"user": entry["user"], "server": entry["server"]})
+            self.db.remove_all(
+                {"user": entry["user"], "server": entry["server"]})
 
         # setup coroutines for unmuting users muted in a previous session
         for mute in self.db.find({"type": "mute", "lifted": False}):
             if not mute["end"]:
                 continue
-            duration = (mute["end"] - time.time()) if mute["end"] >= time.time() else 0
+            duration = (mute["end"] - time.time()
+                        ) if mute["end"] >= time.time() else 0
             server = self.bot.server.client.get_guild(mute["server"])
             user = server.get_member(mute["user"])
             mute_role = self.get_mute_role(server)
@@ -32,7 +34,8 @@ class Moderator(Plugin):
                     # wait until their sentence is up
                     [self.asyncio.sleep, (duration,), {}],
                     # remove the entry from the db
-                    [self.lift_action, ("mute", mute["user"], mute["server"]), {}],
+                    [self.lift_action, ("mute", mute["user"],
+                                        mute["server"]), {}],
                     # remove their role
                     [self.remove_role, (user, mute_role), {}],
                 ]
@@ -41,7 +44,8 @@ class Moderator(Plugin):
         for ban in self.db.find({"type": "ban", "lifted": False}):
             if not ban["end"]:
                 continue
-            duration = (ban["end"] - time.time()) if ban["end"] >= time.time() else 0
+            duration = (ban["end"] - time.time()
+                        ) if ban["end"] >= time.time() else 0
             server = self.bot.server.client.get_guild(ban["server"])
             user = self.bot.server.client.get_user(ban["user"])
 
@@ -50,7 +54,8 @@ class Moderator(Plugin):
                     # wait until their sentence is up
                     [self.asyncio.sleep, (duration,), {}],
                     # remove the entry from the db
-                    [self.lift_action, ("ban", ban["user"], ban["server"]), {}],
+                    [self.lift_action, ("ban", ban["user"],
+                                        ban["server"]), {}],
                     # remove their role
                     [self.unban, (server, user), {}],
                 ]
@@ -120,7 +125,8 @@ class Moderator(Plugin):
             self.bot.msg(message.target, "Invalid role")
             return False
         if not message.server in self.bot.config["plugin_config"]:
-            self.bot.config["plugin_config"][str(message.server)] = {"mod_roles": []}
+            self.bot.config["plugin_config"][str(message.server)] = {
+                "mod_roles": []}
         self.bot.config["plugin_config"][str(message.server)]["mod_roles"].append(
             matching_role.id
         )
@@ -190,7 +196,7 @@ class Moderator(Plugin):
                 ]
                 if not forever:
                     calls += [
-                        [self.asyncio.sleep, (duration,), {},],
+                        [self.asyncio.sleep, (duration,), {}, ],
                         [self.unban, (user.guild, user), {}],
                     ]
                 self.bot.server.gaysyncio(calls)
@@ -218,7 +224,8 @@ class Moderator(Plugin):
                     }
                 )
                 # Send mod confirmation
-                self.bot.msg(message.target, "User was banned.", follows=message)
+                self.bot.msg(message.target, "User was banned.",
+                             follows=message)
 
         self.bot.server.menu(
             message.target,
@@ -287,7 +294,8 @@ class Moderator(Plugin):
                     calls.append([self.asyncio.sleep, (duration,), {}])
                     # lift from the db
                     calls.append(
-                        [self.lift_action, ("mute", user.id, user.guild.id), {}]
+                        [self.lift_action,
+                            ("mute", user.id, user.guild.id), {}]
                     )
                     # remove their role
                     calls.append([self.remove_role, (user, mute_role), {}])
@@ -329,7 +337,8 @@ class Moderator(Plugin):
                 )
 
                 # Send mod confirmation
-                self.bot.msg(message.target, "User was muted.", follows=message)
+                self.bot.msg(message.target, "User was muted.",
+                             follows=message)
 
         self.bot.server.menu(
             message.target,
@@ -350,8 +359,10 @@ class Moderator(Plugin):
     async def remove_role(self, user, role):
         # remove the mute role from the user
         await user.remove_roles(role)
-        self.bot.msg(self.bot.config["audit_channel"], "<@%s> was unmuted" % user.id)
+        self.bot.msg(self.bot.config["audit_channel"],
+                     "<@%s> was unmuted" % user.id)
 
     async def unban(self, server, user):
         await server.unban(user)
-        self.bot.msg(self.bot.config["audit_channel"], "<@%s> was unbanned" % user.id)
+        self.bot.msg(self.bot.config["audit_channel"],
+                     "<@%s> was unbanned" % user.id)

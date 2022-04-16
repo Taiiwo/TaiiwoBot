@@ -85,7 +85,8 @@ class LastFm(Plugin):
             user = self.get_user(message)
             track = self.get_nowplaying(user)
             track_name = track["name"]
-        self.bot.msg(message.target, self.get_youtube(track_name), follows=message)
+        self.bot.msg(message.target, self.get_youtube(
+            track_name), follows=message)
 
     def get_nowplaying(self, user):
         if not user:
@@ -119,11 +120,14 @@ class LastFm(Plugin):
         current_user = self.db.find_one({"discord_id": message.author})
         if current_user:
             self.db.update(
-                {"discord_id": message.author}, {"$set": {"lastfm_user": username}}
+                {"discord_id": message.author}, {
+                    "$set": {"lastfm_user": username}}
             )
         else:
-            self.db.insert_one({"discord_id": message.author, "lastfm_user": username})
-        self.bot.msg(message.target, "Account linked successfully!", follows=message)
+            self.db.insert_one(
+                {"discord_id": message.author, "lastfm_user": username})
+        self.bot.msg(message.target,
+                     "Account linked successfully!", follows=message)
 
     def get_user(self, message):
         user = self.db.find_one({"discord_id": message.author})

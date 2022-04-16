@@ -3,6 +3,7 @@ import requests
 import dwh_hashkit
 import io
 
+
 class Check(Plugin):
     def __init__(self, bot):
         self.bot = bot
@@ -32,7 +33,8 @@ class Check(Plugin):
             "24f0db614f9ffe58de002c62ec13aa6d2432f70dd8f318553f256678720c1042cdcf3307f2c16280d20f2927db60906bb2486ad83a618604303600d7d2ace674",
             "30ac3b4b4ae78110c3ed50018f0bd349eb3d3c2b25ede66160e8f1221bf9e8b8729b0b7f4ddea8d3ebd4e0c2d8b2315b8bcdba6d62eacc2d521130b8645dda77"
         ]
-        self.algorithms = ["SHA512", "Blake2b", "Streebog", "SHA3", "FNV-0", "FNV-1", "FNV-1a", "Grøstl", "MD6", "JH", "Blake512", "LSH", "Skein", "Keccak3", "CubeHash", "Whirlpool-0", "Whirlpool-T", "Whirlpool"]
+        self.algorithms = ["SHA512", "Blake2b", "Streebog", "SHA3", "FNV-0", "FNV-1", "FNV-1a", "Grøstl", "MD6",
+                           "JH", "Blake512", "LSH", "Skein", "Keccak3", "CubeHash", "Whirlpool-0", "Whirlpool-T", "Whirlpool"]
 
     def hash(self, message, *args, url=False, verbose=False):
         texts = []
@@ -54,14 +56,14 @@ class Check(Plugin):
         for text in texts:
             hashes = dwh_hashkit.hash(text)
             if verbose:
-                log += "For text: %s \n" % (
-                        text[0:100] + "..." if len(text) > 100 else text
-                    ) + "\n".join(["[%s] - %s" % (a, h)
-                        for a, h in zip(
-                            self.algorithms,
-                            [h.hex() for h in hashes]
-                        )
-                    ]) + "\n\n"
+                log += "For text: %s\n" % (
+                    text[0:100] + "..." if len(text) > 100 else text
+                ) + "\n".join(["[%s] - %s" % (a, h)
+                               for a, h in zip(
+                    self.algorithms,
+                    [h.hex() for h in hashes]
+                )
+                ]) + "\n\n"
                 #self.bot.msg(message.target, self.bot.server.code_block(str(hashes)))
             for hash in hashes:
                 if hash.hex() in self.dwh:
@@ -77,6 +79,6 @@ class Check(Plugin):
             with io.StringIO() as f:
                 f.write(log)
                 f.seek(0)
-                self.bot.msg(message.target, " ", files=[("output.txt", f),])
+                self.bot.msg(message.target, " ", files=[("output.txt", f), ])
         if not found:
             self.bot.msg(message.target, "Unlucky")

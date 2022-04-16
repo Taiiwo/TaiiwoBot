@@ -26,7 +26,8 @@ class Role(Plugin):
 
     def some_func(self, message, output="output", force=False, quiet=False):
         print("test running")
-        self.bot.msg(message.target, "%s %s %s" % (output, force, quiet), follows=message)
+        self.bot.msg(message.target, "%s %s %s" %
+                     (output, force, quiet), follows=message)
 
     def add(self, force=False):
         pass

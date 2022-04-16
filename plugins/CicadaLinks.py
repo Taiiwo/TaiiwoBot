@@ -18,7 +18,7 @@ class CicadaLinks(Plugin):
             "Provides various helpful links.",  # plugin description
             [],
             self.list,  # main function
-            subcommands=[],
+            subcommands=[]
         ).listen()  # sets the on message callbacks and parses messages
 
     # flags are parsed and passed to the assigned function like so:

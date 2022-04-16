@@ -130,10 +130,12 @@ class RSS(Plugin):
         entry.update({"feed:" + k: v for k, v in feed_sample.items()})
         # post a sample of the feed
         self.post_entry(
-            {"target": message.target, "keys": "default", "conditions": [conditions],},
+            {"target": message.target, "keys": "default",
+                "conditions": [conditions], },
             entry,
         )
         # callback function for if the user hits "yes" in the following menu
+
         def yes(r):
             # the user decided the feed looked good
             if existing_feed:
@@ -151,7 +153,8 @@ class RSS(Plugin):
             message.target,
             message.author_id,
             "Does this look okay?",
-            ync=[yes, lambda r: yes(r) + self.edit(message, url), lambda r: None],
+            ync=[yes, lambda r: yes(
+                r) + self.edit(message, url), lambda r: None],
         )
 
     @Plugin.authenticated
@@ -172,7 +175,8 @@ class RSS(Plugin):
             self.feeds_col.remove(feed)
         else:
             # delete this destination
-            self.feeds_col.update(feed, {"$pull": {"destination": {"target": target}}})
+            self.feeds_col.update(
+                feed, {"$pull": {"destination": {"target": target}}})
 
     @Plugin.authenticated
     def edit(
@@ -191,8 +195,10 @@ class RSS(Plugin):
         target = target if target else message.target
         target = target if type(target) == int else int(target)
         if not url:
-            urls = self.feeds_col.find({"destinations.target": target}, {"url": True})
+            urls = self.feeds_col.find(
+                {"destinations.target": target}, {"url": True})
             # array of arrays: answer, function
+
             def lambda_factory(u):
                 return lambda r: self.edit(
                     message, u["url"], target, formatting, edit_attribute, conditions
@@ -219,7 +225,8 @@ class RSS(Plugin):
                 self,
             )
         # get the destination
-        destination = [f for f in feed["destinations"] if f["target"] == target][0]
+        destination = [f for f in feed["destinations"]
+                       if f["target"] == target][0]
         # which menu is being requested
         if formatting:
             keys = (
@@ -228,6 +235,7 @@ class RSS(Plugin):
                 else destination["keys"]
             )
             # array of arrays: answer, function
+
             def lambda_factory(a):
                 return lambda r: self.edit(message, url, target, edit_attribute=a)
 
@@ -246,7 +254,8 @@ class RSS(Plugin):
             sample_entry = sample_feed["entries"][0]
             # remove redundant data
             del sample_feed["entries"]
-            sample_entry.update({"feed:" + k: v for k, v in sample_feed.items()})
+            sample_entry.update(
+                {"feed:" + k: v for k, v in sample_feed.items()})
             keys = (
                 self.default_settings
                 if destination["keys"] == "default"
@@ -276,6 +285,7 @@ class RSS(Plugin):
                 # post an example for the user to validate
                 self.post_entry(sample_d, sample_entry)
                 # if the users says yes
+
                 def yes(r):
                     # write the new destination to the database
                     self.feeds_col.update(
@@ -393,11 +403,13 @@ class RSS(Plugin):
                 [
                     [
                         "Format - The way the feed is formated",
-                        lambda r: self.edit(message, url, target, formatting=True),
+                        lambda r: self.edit(
+                            message, url, target, formatting=True),
                     ],
                     [
                         "Conditions - Which entries are posted",
-                        lambda r: self.edit(message, url, target, conditions=True),
+                        lambda r: self.edit(
+                            message, url, target, conditions=True),
                     ],
                 ],
             )
@@ -444,6 +456,7 @@ class RSS(Plugin):
         entry["summary"] = summary if summary != "" else entry["summary"]
         entry["description"] = entry["summary"]  # alias
         # turns a key format into value string
+
         def format_key(t):
             v = []
             # for each word in the value of the key if value exists
@@ -488,7 +501,8 @@ class RSS(Plugin):
                     ):
                         entries.append(entry)
                         if parser.parse(entry["updated"], ignoretz=True) > latest_post:
-                            latest_post = parser.parse(entry["updated"], ignoretz=True)
+                            latest_post = parser.parse(
+                                entry["updated"], ignoretz=True)
                 # if there are no new entries
                 if len(entries) == 0:
                     # no new articles, go to next feed
@@ -523,7 +537,8 @@ class RSS(Plugin):
                             # entry does not match the conditions for this dest
                             continue
                         self.post_entry(destination, entry)
-                self.feeds_col.update(feed, {"$set": {"latest_post": latest_post}})
+                self.feeds_col.update(
+                    feed, {"$set": {"latest_post": latest_post}})
             time.sleep(60 * 10)
 
     def unload(self):
