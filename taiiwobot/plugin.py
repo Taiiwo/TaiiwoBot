@@ -5,6 +5,7 @@ class Plugin:
 
     def unload(self):
         if hasattr(self, "interface"):
+            self.bot.server.unload_command(self.interface)
             self._unloaded = True
             del self.interface
 

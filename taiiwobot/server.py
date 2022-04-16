@@ -22,6 +22,12 @@ class Server:
     def me(self):
         return self.config["user"]
 
+    def register_command(self, interface):
+        pass
+
+    def unload_command(self, interface):
+        pass
+
     def menu(self, target, user, question, answers=None, ync=None, cancel=False):
         if ync:
             if len(ync) != 3:
@@ -33,13 +39,15 @@ class Server:
             functions = ync
         else:
             if not answers:
-                raise util.Error("You can't call this function with no answers")
+                raise util.Error(
+                    "You can't call this function with no answers")
             if len(answers) > 11:
                 raise util.Error(
                     "A maximum of 11 options are supported. You supplied %s"
                     % len(answers)
                 )
-            numbers = ["0⃣", "1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]
+            numbers = ["0⃣", "1⃣", "2⃣", "3⃣", "4⃣",
+                       "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]
             # if user supplies an icon to use, use that, else use a number icon
             reactions = [
                 numbers[i] if len(a) < 3 else a[0] for i, a in enumerate(zip(answers))
@@ -50,13 +58,16 @@ class Server:
             )
         message = "%s\n\n%s\n\nReact to answer." % (
             question,
-            "\n".join(["[%s] - %s" % (r, a) for r, a in zip(reactions, answers)]),
+            "\n".join(["[%s] - %s" % (r, a)
+                       for r, a in zip(reactions, answers)]),
         )
-        self.msg(target, message, reactions=zip(reactions, functions), user=user)
+        self.msg(target, message, reactions=zip(
+            reactions, functions), user=user)
 
     def prompt(self, target, user, prompt, handler, cancel=False, timeout=60.0):
         self.msg(target, prompt, reactions=[["❌", cancel]], user=user)
-        self.message_callbacks[target + ":" + user] = [time.time(), handler, timeout]
+        self.message_callbacks[target + ":" +
+                               user] = [time.time(), handler, timeout]
 
     # event handler handling
     def on(self, command):
