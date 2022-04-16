@@ -101,16 +101,11 @@ class Cipher:
         self.text = text
         self.alpha = alpha
         self.gm = Gematria()
-        self.primes = lambda: (  # generates an infinite number of prime numbers
+        self.primes = lambda: (
             n
-            for n, _ in enumerate(iter(int, 1))  # for every value of n
-            if n % 2 != 0  # but only if n is not even
-            and all(
-                n % p != 0 for p in range(3, int(math.sqrt(n)) + 1, 2)
-            )  # not divisable by 3..sqrt(n)+1, skipping even numbers
-            and n
-            != 1  # 1 doesn't count as prime (we're not counting 2 specific factors, so this has to be hardcoded)
-            or n == 2  # bypass the even number skip for 2.
+            for n, _ in enumerate(iter(int, 1))
+            if all(n % p != 0 for p in range(2, int(math.sqrt(n)) + 1))
+            and n not in [0, 1]
         )
 
     def to_runes(self):
@@ -144,7 +139,7 @@ class Cipher:
     def to_index(self):
         return [self.alpha.index(i.upper()) for i in self.text.upper()]
 
-    def running_shift(self, key, interrupts="", skip_indices=[], decrypt=True):
+    def running_shift(self, key, interrupts="", skip_indices=[], decrypt=False):
         if not key:
             return self.text
 
@@ -163,6 +158,7 @@ class Cipher:
         for c in self.text:
             if c not in self.alpha or c in interrupts.upper():
                 o += c
+                i += 1
                 continue
             if i in skip_indices:
                 o += c
@@ -180,16 +176,15 @@ class Cipher:
 
         return Cipher(o, self.alpha)
 
-    def vigenere(self, key, interrupts=[], decrypt=True):
+    def vigenere(self, key, interrupts=[], decrypt=False):
         key = [self.alpha.index(k) for k in key.upper() if k in self.alpha]
         return self.running_shift(key, interrupts=interrupts, decrypt=decrypt)
 
-    def totient_stream(self, interrupts="", skip_indices=[], decrypt=True):
+    def totient_stream(self, interrupts="", skip_indices=[]):
         return self.running_shift(
-            (p - 1 for p in self.primes()),
+            (-p + 1 for p in self.primes()),
             interrupts=interrupts,
             skip_indices=skip_indices,
-            decrypt=decrypt,
         )
 
 
