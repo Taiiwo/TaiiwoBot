@@ -1,5 +1,6 @@
 from taiiwobot.plugin import Plugin
 
+
 class Role(Plugin):
     def __init__(self, bot):
         self.bot = bot
@@ -13,7 +14,7 @@ class Role(Plugin):
             ],
             self.some_func,
             subcommands=[
-                bot.util.Interface(
+                bot.util.Subcommand(
                     "add",
                     "adds some stuff",
                     [
