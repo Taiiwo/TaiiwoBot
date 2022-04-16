@@ -3,6 +3,7 @@ from taiiwobot.plugin import Plugin
 # import socket
 try:
     from shodan import Shodan
+    import shodan.exception
 except:
     Shodan = False
 
@@ -28,7 +29,11 @@ class FindIP(Plugin):
     def main(self, message, *args):  # include your root flags here
         query = args[0]
         # socket.inet_aton(query)
-        results = self.api.host(query)
+        try:
+            results = self.api.host(query)
+        except shodan.exception.APIError as e:
+            self.bot.msg(message.target, str(e))
+            return False
         output = []
         output.append(
             "OS: "
