@@ -1,22 +1,24 @@
+from .server import Server
+from . import util
 import asyncio
 import discord
 import time
 import re
 from bson import Int64
+# from discord_slash import SlashCommand
+# from discord_slash.utils.manage_commands import create_option
+# import discord_slash.error
+from discord.ext import commands
 
 Empty = discord.Embed.Empty
-
-from . import util
-from .server import Server
-
-import time
 
 
 class Discord(Server):
     def __init__(self, config):
         missing_keys = util.missing_keys(["api_key"], config)
         if missing_keys:
-            quit("[E] Missing args: %s. Check config.json" % (", ").join(missing_keys))
+            quit("[E] Missing args: %s. Check config.json" %
+                 (", ").join(missing_keys))
         defaults = {}
         self.type = "discord"
         defaults.update(config)
@@ -28,6 +30,9 @@ class Discord(Server):
         intents = discord.Intents.default()
         intents.members = True
         self.client = discord.Client(intents=intents)
+        # self.client = commands.Bot("$", intents=intents)
+        # self.slash = SlashCommand(
+        #     self.client, sync_commands=True)
 
         # some logging handlers
         @self.on("message", "root")
@@ -38,7 +43,8 @@ class Discord(Server):
                 % (
                     time.strftime("%H:%M:%S"),
                     m.guild.name if m.guild else m.author.name,
-                    m.channel.name if str(m.channel.type) != "private" else "DM",
+                    m.channel.name if str(
+                        m.channel.type) != "private" else "DM",
                     m.author.name,
                     m.content,
                 )
@@ -149,7 +155,8 @@ class Discord(Server):
                 return True
             # allow users with the specified roles
             if str(message.server) in self.config["plugin_config"]:
-                server_config = self.config["plugin_config"][str(message.server)]
+                server_config = self.config["plugin_config"][str(
+                    message.server)]
             else:
                 # TODO: this should be a RuntimeError but I couldn't be bothered
                 self.msg(
@@ -183,7 +190,8 @@ class Discord(Server):
         thumbnail=Empty,
         image=Empty,
     ):
-        e = discord.Embed(title=title, url=url, description=desc, color=int(color, 16))
+        e = discord.Embed(title=title, url=url,
+                          description=desc, color=int(color, 16))
         if thumbnail:
             e.set_thumbnail(url=thumbnail)
         for field in fields:
@@ -234,13 +242,15 @@ class Discord(Server):
             functions = ync
         else:
             if not answers:
-                raise util.Error("You can't call this function with no answers")
+                raise util.Error(
+                    "You can't call this function with no answers")
             if len(answers) > 11:
                 raise util.Error(
                     "A maximum of 11 options are supported. You supplied %s"
                     % len(answers)
                 )
-            numbers = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "0⃣"]
+            numbers = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣",
+                       "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "0⃣"]
             # if user supplies an icon to use, use that, else use a number icon
             reactions = [
                 numbers[i] if len(a) < 3 else a[0] for i, a in enumerate(answers)
@@ -251,7 +261,8 @@ class Discord(Server):
             )
         message = "%s\n\n%s\n\nReact to answer." % (
             question,
-            "\n".join(["[%s] - %s" % (r, a) for r, a in zip(reactions, answers)]),
+            "\n".join(["[%s] - %s" % (r, a)
+                       for r, a in zip(reactions, answers)]),
         )
         self.msg(
             target,
@@ -320,7 +331,8 @@ class Discord(Server):
             async_calls = []
             # sending the message
             async_calls.append(
-                [target.send, (message,), {"embed": embed, "files": [discord.File(f, filename=fn) for fn, f in files]}]
+                [target.send, (message,), {"embed": embed, "files": [
+                    discord.File(f, filename=fn) for fn, f in files]}]
             )
             if follows:
                 # if the message is already being followed
@@ -335,6 +347,7 @@ class Discord(Server):
                     )
                     del self.followed_messages[follows.raw_message.id]
                 # register that this message is a response
+
                 async def follow_message(m):
                     self.followed_messages[follows.raw_message.id] = m
 
@@ -349,6 +362,7 @@ class Discord(Server):
 
                 async_calls.append([add_reaction, ("$0", r), {}])
             # a callback for when the message and all the reactions have been sent
+
             async def add_reaction_callbacks(message):
                 # make a note of the message id, so that if the user clicks them
                 # the reaction callback function is run
@@ -458,7 +472,12 @@ class Discord(Server):
         #     print("[E] Duplicate subcommand")
         #     return False
 
-    # event handler handling
+    def unload_command(self, interface):
+        # this is where we would remove the slash commands if the slash commands api
+        # had any reasonable way of doing so
+        pass
+
+        # event handler handling
     def on(self, command, plugin_name):
         def handler(f):
             # remove old handlers from this plugin
