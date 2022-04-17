@@ -396,6 +396,68 @@ class Discord(Server):
     def me(self):
         return self.client.user.id
 
+    def register_command(self, interface):
+        # this is where we would register slash commands
+        # They aren't working right now, so I've commented them out
+        pass
+        # def make_async(f):
+        #     async def a(rm, **kwargs):
+        #         print(rm.data)
+        #         # reconstruct the user's command
+
+        #         def get_command(command):
+        #             string = command["name"]
+        #             if "value" in command:
+        #                 string += " " + command["value"]
+        #             if "options" in command:
+        #                 for option in command["options"]:
+        #                     string += " " + get_command(option)
+        #             return string
+        #         # respond with the user's command
+        #         r = await rm.reply("/" + get_command(rm.data))
+        #         # construct a message object to send to the interface
+        #         m = self.format_message(rm.message)
+        #         m.author = rm.author.id
+        #         m.raw_message.author = rm.author
+
+        #         args = kwargs["args"].split() if "args" in kwargs else []
+        #         if "args" in kwargs:
+        #             del kwargs["args"]
+        #         # execute the callback function
+        #         m = f(m, *args, **kwargs)
+        #         return m
+        #     return a
+        # flags = []
+        # for flag in interface.flag_info:
+        #     flags.append(create_option(
+        #         flag[1],
+        #         flag[2], option_type=1, required=False
+        #     ))
+        # try:
+        #     self.slash.add_slash_command(
+        #         make_async(interface.func),
+        #         interface.name, interface.desc[:100], options=flags
+        #     )
+        #     self.slash.add_subcommand(make_async(interface.func), interface.name, name="default",
+        #                               description="Use the command with no subcommand.", options=[create_option(
+        #                                   "args", "The arguments for the command", option_type=3, required=False
+        #                               )])
+        #     self.slash.add_subcommand(make_async(interface.help), interface.name,
+        #                               name="help", description="Post the help text for the plugin.", options=[])
+        #     for subcommand in interface.subcommands:
+        #         sub_flags = [create_option(
+        #             "args", "The arguments for the command", option_type=3, required=False)]
+        #         for sub_flag in subcommand.flag_info:
+        #             sub_flags.append(create_option(
+        #                 sub_flag[1],
+        #                 sub_flag[2][:100], option_type=3, required=False
+        #             ))
+        #         self.slash.add_subcommand(make_async(
+        #             subcommand.func), interface.name, name=subcommand.name, description=subcommand.desc[:100], options=sub_flags)
+        # except discord_slash.error.DuplicateCommand:
+        #     print("[E] Duplicate subcommand")
+        #     return False
+
     # event handler handling
     def on(self, command, plugin_name):
         def handler(f):
