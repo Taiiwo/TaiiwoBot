@@ -17,9 +17,9 @@ class VirusTotal(Plugin):
 
         @bot.on("message", self.name)
         def scan_attachments(message):
-            if message.author_id == self.bot.server.me():
+            if getattr(message, "author", None) == self.bot.server.me():
                 return
-            attachments = message.attachments or []
+            attachments = getattr(message, "attachments", None) or []
             if not attachments:
                 return
             for attachment in attachments:
@@ -62,7 +62,12 @@ class VirusTotal(Plugin):
             raise self.bot.util.RuntimeError(
                 "VirusTotal: attachment URL not available", message.target, self
             )
-        response = requests.get(url, timeout=30)
+        try:
+            response = requests.get(url, timeout=30)
+        except requests.RequestException:
+            raise self.bot.util.RuntimeError(
+                "VirusTotal: failed to download attachment", message.target, self
+            )
         if response.status_code != 200:
             raise self.bot.util.RuntimeError(
                 "VirusTotal: failed to download attachment", message.target, self
@@ -70,28 +75,45 @@ class VirusTotal(Plugin):
         return response.content
 
     def request_report(self, message, file_hash):
-        response = requests.get(
-            "https://www.virustotal.com/vtapi/v2/file/report",
-            params={"apikey": self.api_key, "resource": file_hash},
-            timeout=30,
-        )
+        try:
+            response = requests.get(
+                "https://www.virustotal.com/vtapi/v2/file/report",
+                params={"apikey": self.api_key, "resource": file_hash},
+                timeout=30,
+            )
+        except requests.RequestException:
+            raise self.bot.util.RuntimeError(
+                "VirusTotal: failed to fetch report", message.target, self
+            )
         if response.status_code != 200:
             raise self.bot.util.RuntimeError(
                 "VirusTotal: failed to fetch report", message.target, self
             )
-        return response.json()
+        try:
+            return response.json()
+        except ValueError:
+            raise self.bot.util.RuntimeError(
+                "VirusTotal: invalid report response", message.target, self
+            )
 
     def upload_file(self, message, attachment, attachment_data):
         filename = getattr(attachment, "filename", "attachment")
         if isinstance(attachment, dict):
             filename = attachment.get("filename", filename)
         files = {"file": (filename, attachment_data)}
-        response = requests.post(
-            "https://www.virustotal.com/vtapi/v2/file/scan",
-            files=files,
-            data={"apikey": self.api_key},
-            timeout=60,
-        )
+        try:
+            response = requests.post(
+                "https://www.virustotal.com/vtapi/v2/file/scan",
+                files=files,
+                data={"apikey": self.api_key},
+                timeout=60,
+            )
+        except requests.RequestException:
+            raise self.bot.util.RuntimeError(
+                "VirusTotal: failed to submit file for scanning",
+                message.target,
+                self,
+            )
         if response.status_code != 200:
             raise self.bot.util.RuntimeError(
                 "VirusTotal: failed to submit file for scanning",
