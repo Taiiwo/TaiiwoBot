@@ -23,7 +23,10 @@ class VirusTotal(Plugin):
             if not attachments:
                 return
             for attachment in attachments:
-                self.bot.util.thread(self.scan_attachment, (message, attachment))
+                filename = getattr(attachment, "filename", "").lower()
+                excluded_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.svg', '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp', '.txt', '.md', '.mp3', '.wav', '.flac', '.aac', '.ogg', '.wma', '.m4a'}
+                if not any(filename.endswith(ext) for ext in excluded_extensions):
+                    self.bot.util.thread(self.scan_attachment, (message, attachment))
 
     def scan_attachment(self, message, attachment):
         try:
@@ -82,10 +85,12 @@ class VirusTotal(Plugin):
                 timeout=30,
             )
         except requests.RequestException:
+            print("VirusTotal: RequestException while fetching report: ", response.text)
             raise self.bot.util.RuntimeError(
                 "VirusTotal: failed to fetch report", message.target, self
             )
         if response.status_code != 200:
+            print("VirusTotal: RequestException while fetching report: ", response.text)
             raise self.bot.util.RuntimeError(
                 "VirusTotal: failed to fetch report", message.target, self
             )
