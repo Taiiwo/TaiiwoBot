@@ -177,17 +177,17 @@ class Discord(Server):
 
     def embed(
         self,
-        title=Empty,
-        url=Empty,
-        desc=Empty,
-        author_name=Empty,
-        author_link=Empty,
-        author_icon=Empty,
+        title=None,
+        url=None,
+        desc=None,
+        author_name=None,
+        author_link=None,
+        author_icon=None,
         fields=[],
-        footer=Empty,
+        footer=None,
         color="000",
-        thumbnail=Empty,
-        image=Empty,
+        thumbnail=None,
+        image=None,
     ):
         e = discord.Embed(title=title, url=url,
                           description=desc, color=int(color, 16))
@@ -203,8 +203,8 @@ class Discord(Server):
         if author_name:
             e.set_author(
                 name=author_name,
-                url=author_link or Empty,
-                icon_url=author_icon or Empty,
+                url=author_link or None,
+                icon_url=author_icon or None,
             )
         if footer:
             e.set_footer(text=footer)
