@@ -1,3 +1,4 @@
+import logging
 from .server import Server
 from . import util
 import asyncio
@@ -9,9 +10,7 @@ from bson import Int64
 # from discord_slash.utils.manage_commands import create_option
 # import discord_slash.error
 from discord.ext import commands
-
-Empty = discord.Embed.Empty
-
+import traceback
 
 class Discord(Server):
     def __init__(self, config):
@@ -27,8 +26,7 @@ class Discord(Server):
         self.reaction_callbacks = {}
         self.message_callbacks = {}
         self.followed_messages = {}
-        intents = discord.Intents.default()
-        intents.members = True
+        intents = discord.Intents().all()
         self.client = discord.Client(intents=intents)
         # self.client = commands.Bot("$", intents=intents)
         # self.slash = SlashCommand(
@@ -135,6 +133,7 @@ class Discord(Server):
 
     def start(self):
         print("starting discord...")
+        logging.basicConfig(level=logging.WARNING)
         self.client.run(self.config["api_key"])
 
     def code_block(self, text):
@@ -573,20 +572,24 @@ class Discord(Server):
 
     def gaysyncio(self, calls):
         async def f():
-            # make a buffer of output values
-            buffer = []
-            # if one of the args starts with a $, replace it with it's index inbuffer
-            for function, args, kwargs in calls:
-                args2 = []
-                for arg in args:
-                    if type(arg) == str and len(arg) > 1 and arg[0] == "$":
-                        try:
-                            args2.append(buffer[int(arg[1:])])
-                        except IndexError:
+            try:
+                # make a buffer of output values
+                buffer = []
+                # if one of the args starts with a $, replace it with it's index inbuffer
+                for function, args, kwargs in calls:
+                    args2 = []
+                    for arg in args:
+                        if type(arg) == str and len(arg) > 1 and arg[0] == "$":
+                            try:
+                                args2.append(buffer[int(arg[1:])])
+                            except IndexError:
+                                args2.append(arg)
+                        else:
                             args2.append(arg)
-                    else:
-                        args2.append(arg)
-                args = args2
-                buffer.append(await function(*args, **kwargs))
+                    args = args2
+                    buffer.append(await function(*args, **kwargs))
+            except Exception as e:
+                print(traceback.format_exc())
+                return False
 
         self.client.loop.create_task(f())
