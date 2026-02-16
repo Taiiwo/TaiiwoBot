@@ -174,6 +174,9 @@ class Interface:
         arguments = arguments if arguments else tuple()
         o_message = o_message if o_message else message
         args = message.content.split()
+        # if the message is sent by us, we don't want to process it
+        if message.author == self.plugin.bot.server.me():
+            return False
         if not self.is_subcommand and len(args) < 1:
             return False
         # skip the first arg because it's the name of the command
