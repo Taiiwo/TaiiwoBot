@@ -140,7 +140,7 @@ class RSS(Plugin):
             # the user decided the feed looked good
             if existing_feed:
                 # edit the existing feed
-                self.feeds_col.update(
+                self.feeds_col.update_one(
                     existing_feed, {"$push": {"destinations": destination}}
                 )
             else:
@@ -175,7 +175,7 @@ class RSS(Plugin):
             self.feeds_col.remove(feed)
         else:
             # delete this destination
-            self.feeds_col.update(
+            self.feeds_col.update_one(
                 feed, {"$pull": {"destination": {"target": target}}})
 
     @Plugin.authenticated
@@ -288,7 +288,7 @@ class RSS(Plugin):
 
                 def yes(r):
                     # write the new destination to the database
-                    self.feeds_col.update(
+                    self.feeds_col.update_one(
                         {"url": url, "destinations.target": target},
                         {"$set": {"destinations.$": d}},
                     )
@@ -357,7 +357,7 @@ class RSS(Plugin):
             def append_condition(condition):
                 print(condition)
                 condict = self.parse_condition(condition)
-                self.feeds_col.update(
+                self.feeds_col.update_one(
                     {"url": url, "destinations.target": target},
                     {"$push": {"destinations.$.conditions": condition}},
                 )
@@ -377,7 +377,7 @@ class RSS(Plugin):
         elif delete_condition:
 
             def delete_condition_f(condition):
-                r = self.feeds_col.update(
+                r = self.feeds_col.update_one(
                     {"url": url, "destinations.target": target},
                     {"$pull": {"destinations.$.conditions": condition}},
                 )
@@ -537,7 +537,7 @@ class RSS(Plugin):
                             # entry does not match the conditions for this dest
                             continue
                         self.post_entry(destination, entry)
-                self.feeds_col.update(
+                self.feeds_col.update_one(
                     feed, {"$set": {"latest_post": latest_post}})
             time.sleep(60 * 10)
 
