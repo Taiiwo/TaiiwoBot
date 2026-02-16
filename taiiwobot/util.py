@@ -26,7 +26,7 @@ db = False
 
 def get_db():
     global db
-    if not db:
+    if db == False:
         db = pymongo.MongoClient()["taiiwobot"]
     return db
 
