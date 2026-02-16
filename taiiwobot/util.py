@@ -199,7 +199,7 @@ class Interface:
                 self.help(o_message.target, self.func.__self__)
                 return False
             # does this arg look like a flag?
-            if arg[0] == "-":
+            if arg[0] == "-" and self.flags != []:
                 # look for this flag in our list of flags
                 flag_name = arg.strip("-").split("=")[0]
                 if flag_name in self.flags:
@@ -231,7 +231,7 @@ class Interface:
                         while i < len(args):
                             if args[i][-1] == '"':
                                 # we found the end
-                                quote = (value + " ".join(args[start + 1: i + 1]))[
+                                quote = (value + " " + " ".join(args[start + 1: i + 1]))[
                                     1:-1
                                 ]
                                 break
