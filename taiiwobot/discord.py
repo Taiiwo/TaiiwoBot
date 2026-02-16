@@ -28,6 +28,7 @@ class Discord(Server):
         self.followed_messages = {}
         intents = discord.Intents().all()
         self.client = discord.Client(intents=intents)
+        self.recently_pinned = []
         # self.client = commands.Bot("$", intents=intents)
         # self.slash = SlashCommand(
         #     self.client, sync_commands=True)
@@ -59,6 +60,12 @@ class Discord(Server):
 
         @self.client.event
         async def on_message(message):
+            if message.pinned:
+                self.recently_pinned.append(message.id)
+                return
+            elif message.id in self.recently_pinned:
+                self.recently_pinned.remove(message.id)
+                return
             # for each message callback
             message_callbacks = self.message_callbacks.copy()
             for callback_id, callback in self.message_callbacks.items():
@@ -79,6 +86,9 @@ class Discord(Server):
 
             message = self.format_message(message)
             self.trigger("message", message)
+        
+        async def process_message(self, message):
+            pass
 
         @self.client.event
         async def on_message_delete(message):
@@ -111,7 +121,9 @@ class Discord(Server):
                                 "emoji": reaction.emoji,
                                 "reactor": reactor.id,
                                 "message": reaction.message.id,
+                                "message_content": reaction.message.content,
                                 "channel": reaction.message.channel.id,
+                                "raw_reaction": reaction,
                             }
                         )
                         # if it was a targeted callback, remove it
@@ -367,11 +379,11 @@ class Discord(Server):
                 # the reaction callback function is run
                 self.reaction_callbacks[message.id] = (user, reactions)
 
-            # finally, add the reactions callback if required
-            if reactions:
-                async_calls.append([add_reaction_callbacks, ("$0",), {}])
+            # finally, add the callbacks if required
             if callback:
                 async_calls.append(callback)
+            if reactions:
+                async_calls.append([add_reaction_callbacks, ("$0",), {}])
             if delete_after:
 
                 async def d(message, delay):
