@@ -23,6 +23,8 @@ class Config(dict):
         }
         try:
             user_config = json.loads(open(config_location).read())
+            if key:
+                user_config = user_config[key]
         except (IOError, OSError):
             answer = input(
                 "No config file was found. Would you like to generate one? (y/N)"
