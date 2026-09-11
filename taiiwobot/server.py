@@ -96,7 +96,7 @@ class Server:
 
     def format_message(self, m):
         return util.Message(
-            nick=m.author.nick if hasattr(m.author, "nick") else m.author.name,
+            nick=getattr(m.author, "display_name", m.author.name),
             username="%s#%s" % (m.author.name, m.author.discriminator),
             author_id=m.author.id,
             type="message",

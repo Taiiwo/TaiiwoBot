@@ -26,7 +26,10 @@ class Discord(Server):
         self.reaction_callbacks = {}
         self.message_callbacks = {}
         self.followed_messages = {}
-        intents = discord.Intents().all()
+        intents = discord.Intents.none()
+        intents.message_content = True
+        # guild_members and presences intentionally disabled: the bot no
+        # longer relies on cached Member data; role lookups go via fetch_member.
         self.client = discord.Client(intents=intents)
         self.recently_pinned = []
         # self.client = commands.Bot("$", intents=intents)
@@ -160,6 +163,19 @@ class Discord(Server):
             return False
 
     def is_mod(self, message):
+        # GUILD_MEMBERS intent is disabled, so message.author may be a User,
+        # not a Member. .roles is only on Member, so resolve via REST once and
+        # cache it back onto the message for the rest of this call.
+        raw = message.raw_message
+        if hasattr(discord, "Member") and not isinstance(raw.author, discord.Member):
+            try:
+                future = asyncio.run_coroutine_threadsafe(
+                    raw.guild.fetch_member(raw.author.id),
+                    self.client.loop,
+                )
+                raw.author = future.result(timeout=5)
+            except Exception:
+                return False
         for role in message.raw_message.author.roles:
             # allow the bot owner
             if message.author == self.config["owner"]:

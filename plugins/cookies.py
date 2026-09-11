@@ -4,6 +4,7 @@ import time
 import random
 import base64
 import asyncio
+import discord
 
 
 class Cookies(Plugin):
@@ -343,13 +344,16 @@ class Cookies(Plugin):
 
                         print(self.db_user)
                         self.update()
-                        # give the user the role
+                        # give the user the role. GUILD_MEMBERS intent is
+                        # disabled, so context.author is a User, not a
+                        # Member — fetch via REST before calling add_roles.
                         print(role)
-                        await context.author.add_roles(role)
+                        member = await context.guild.fetch_member(context.author.id)
+                        await member.add_roles(role)
                         # wait until the role expires
                         await asyncio.sleep(item_a[2] * 60 * 60 * 24)
                         # remove the role
-                        await context.author.remove_roles(role)
+                        await member.remove_roles(role)
 
                     bot.server.gaysyncio(
                         [
@@ -364,7 +368,11 @@ class Cookies(Plugin):
             role_obj = server.get_role(role["role_id"])
             if not role_obj:
                 print("broken user: " + str(uid) + str(role))
-            member = server.get_member(uid)
+            # GUILD_MEMBERS intent is disabled, so resolve via REST
+            try:
+                member = await server.fetch_member(uid)
+            except (discord.NotFound, discord.HTTPException):
+                member = None
             if member:
                 print("removing role for " + member.name)
                 await member.remove_roles(role_obj)

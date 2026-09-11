@@ -19,47 +19,55 @@ class Moderator(Plugin):
             self.db.remove_all(
                 {"user": entry["user"], "server": entry["server"]})
 
-        # setup coroutines for unmuting users muted in a previous session
+        # setup coroutines for unmuting users muted in a previous session.
+        # GUILD_MEMBERS intent is disabled, so resolve the user via REST
+        # instead of relying on get_member (which only sees cached members).
         for mute in self.db.find({"type": "mute", "lifted": False}):
             if not mute["end"]:
                 continue
             duration = (mute["end"] - time.time()
                         ) if mute["end"] >= time.time() else 0
-            server = self.bot.server.client.get_guild(mute["server"])
-            user = server.get_member(mute["user"])
-            mute_role = self.get_mute_role(server)
+            server_id = mute["server"]
+            user_id = mute["user"]
 
-            self.bot.server.gaysyncio(
-                [
-                    # wait until their sentence is up
-                    [self.asyncio.sleep, (duration,), {}],
-                    # remove the entry from the db
-                    [self.lift_action, ("mute", mute["user"],
-                                        mute["server"]), {}],
-                    # remove their role
-                    [self.remove_role, (user, mute_role), {}],
-                ]
-            )
+            async def schedule_unmute(server_id=server_id, user_id=user_id,
+                                      duration=duration):
+                server = self.bot.server.client.get_guild(server_id)
+                if not server:
+                    return
+                try:
+                    user = await server.fetch_member(user_id)
+                except (discord.NotFound, discord.HTTPException):
+                    return
+                mute_role = self.get_mute_role(server)
+                await self.asyncio.sleep(duration)
+                self.lift_action("mute", user_id, server_id)
+                await self.remove_role(user, mute_role)
+
+            self.bot.server.gaysyncio([[schedule_unmute, tuple(), {}]])
 
         for ban in self.db.find({"type": "ban", "lifted": False}):
             if not ban["end"]:
                 continue
             duration = (ban["end"] - time.time()
                         ) if ban["end"] >= time.time() else 0
-            server = self.bot.server.client.get_guild(ban["server"])
-            user = self.bot.server.client.get_user(ban["user"])
+            server_id = ban["server"]
+            user_id = ban["user"]
 
-            self.bot.server.gaysyncio(
-                [
-                    # wait until their sentence is up
-                    [self.asyncio.sleep, (duration,), {}],
-                    # remove the entry from the db
-                    [self.lift_action, ("ban", ban["user"],
-                                        ban["server"]), {}],
-                    # remove their role
-                    [self.unban, (server, user), {}],
-                ]
-            )
+            async def schedule_unban(server_id=server_id, user_id=user_id,
+                                     duration=duration):
+                server = self.bot.server.client.get_guild(server_id)
+                if not server:
+                    return
+                try:
+                    user = await self.bot.server.client.fetch_user(user_id)
+                except (discord.NotFound, discord.HTTPException):
+                    return
+                await self.asyncio.sleep(duration)
+                self.lift_action("ban", user_id, server_id)
+                await self.unban(server, user)
+
+            self.bot.server.gaysyncio([[schedule_unban, tuple(), {}]])
 
         self.interface = bot.util.Interface(
             "mod",  # plugin name
