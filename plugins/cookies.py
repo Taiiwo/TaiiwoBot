@@ -1,3 +1,4 @@
+from collections import Counter
 from taiiwobot import Plugin
 import math
 import time
@@ -26,10 +27,10 @@ class Cookies(Plugin):
             ["🍶", "Sake", 10, "eae6d2"],
         ]
         self.stock = stock
-        self.cross_png = base64.decodestring(
+        self.cross_png = base64.decodebytes(
             b"iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPBAMAAADJ+Ih5AAAAG1BMVEVHcEzdLkTdLkTdLkTdLkTdLkTdLkTdLkTdLkSk3kMyAAAACHRSTlMAHdvcF1I6OV1IEpIAAABdSURBVAjXNc0xDoAwCAXQz6Bz056gi/YIjI2me0fP08Ue2w8qC+EFPlgqWA24MruUjnMEII4K0UwwTiNEU9LuQJoOwDpv74ifSNnUd3iSjCzDsnDYlJj8/tKO//sD7u0O9OvZ4HcAAAAASUVORK5CYII="
         )
-        self.cookie_png = base64.decodestring(
+        self.cookie_png = base64.decodebytes(
             b"iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAMAAAAMCGV4AAAAVFBMVEXboITboITboITboITboITboITboIRHcEzboITboITboITboITboITboITboITboITboITZnoLEiW/XnICkaFLRlnu1emK+g2rLkHaWWEKNTDeTUz4PnvnzAAAAEXRSTlP/KbtPZ1lAAHIzBxbM18Wl5ZgtcSsAAACHSURBVAjXLY8JDoUwCESndte/QV2q3v+eH6gklHmBMBRZo5YQ0qwKkvEFCXq7wVEJfDYU5Yq1aZsJ8MITCNvebOg3o2o9LrYVSCgm9k3L2oIwW4/vQ96CSNeqvJ9svBCPXRYV+fvIJrYf8XOmO+jYUPU+ceh315Ew7vd6EjCl5z85u1D8YuoP8/AGR+6gjvEAAAAASUVORK5CYII="
         )
         self.interface = bot.util.Interface(
@@ -102,103 +103,117 @@ class Cookies(Plugin):
                     ],
                     self.dice,
                 ),
+                bot.util.Subcommand(
+                    "topten",
+                    "Check the top 10 richest people in the server",
+                    [],
+                    self.topten,
+                ),
             ],
         ).listen()  # sets the on message callbacks and parses messages
 
+        author_history = []
         @bot.on("message", self.name)
         def spawn_cookie(message):
-            if message.content and (
+            if not message.content or (
                 message.content[0] == "$"
                 or message.author == self.bot.server.me()
                 or message.raw_message.author.bot
+                or message.author in author_history
             ):
                 return False
+            print('message: ' + str(message.raw_message.author.bot), message.author)
+            print('history: ' + str(author_history), message.author)
+            author_history.append(message.author)
+            if len(author_history) > 3:
+                author_history.pop(0)
             roll = random.randint(0, 819200)
-            if roll < 1:
+            print('Rolling for a cookie: ' + str(roll))
+            if roll < 2:
                 self.bot.msg(
                     message.target,
                     "A Steak appeared",
                     reactions=(("🥩", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 2:
+            elif roll < 4:
                 self.bot.msg(
                     message.target,
                     "Some Blueberry Pancakes appeared",
                     reactions=(("🥞", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 4:
+            elif roll < 8:
                 self.bot.msg(
                     message.target,
                     "A Doughnut appeared",
                     reactions=(("🍩", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 8:
+            elif roll < 16:
                 self.bot.msg(
                     message.target,
                     "A Cupcake appeared",
                     reactions=(("🧁", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 16:
+            elif roll < 32:
                 self.bot.msg(
                     message.target,
                     "Some Ramen appeared",
                     reactions=(("🍜", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 32:
+            elif roll < 64:
                 self.bot.msg(
                     message.target,
                     "Some Bacon appeared",
                     reactions=(("🥓", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 64:
+            elif roll < 128:
                 self.bot.msg(
                     message.target,
                     "Some Rice appeared",
                     reactions=(("🍚", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 128:
+            elif roll < 256:
                 self.bot.msg(
                     message.target,
                     "Some Sake appeared",
                     reactions=(("🍶", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 256:
+            elif roll < 512:
                 self.bot.msg(
                     message.target,
                     "A Salad appeared",
                     reactions=(("🥗", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 512:
+            elif roll < 1024:
                 self.bot.msg(
                     message.target,
                     "A Coffee appeared",
                     reactions=(("☕", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 1024:
+            elif roll < 2048:
                 self.bot.msg(
                     message.target,
                     "Some Milk appeared",
                     reactions=(("🥛", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 2048:
+            elif roll < 8192:
                 self.bot.msg(
                     message.target,
                     "Some Green Tea appeared",
                     reactions=(("🍵", self.collect_item),),
                     delete_after=60,
                 )
-            elif roll < 8192:
+            elif roll < 16184:
                 # cookie
                 self.bot.msg(
                     message.target,
@@ -206,6 +221,21 @@ class Cookies(Plugin):
                     reactions=(("🍪", self.collect_cookie),),
                     delete_after=60,
                 )
+                # self.test(message)
+
+        # If someone reacts a cookie on something, take a cookie from them and give it to the author
+        @bot.on("reaction", self.name)
+        def collect_item(reaction, reactor):
+            if reaction.emoji == "🍪" and self.bot.server.me() not in [reactor.id, reaction.message.author.id]:
+                reactor = self.User(reactor.id)
+                if reactor.inc_cookies(-1):
+                    self.bot.msg(
+                        reaction.message.channel,
+                        "<@%s> collected a cookie from <@%s>"
+                        % (reaction.message.author.id, reactor.id),
+                        delete_after=60,
+                    )
+                    self.User(reaction.message.author.id).inc_cookies(1)
 
         class User:
             def __init__(self, user_id, db=self.db, init=False):
@@ -258,7 +288,7 @@ class Cookies(Plugin):
                 if not self.db_user:
                     if inc >= 0:
                         self.init(cookies=inc)
-                        return
+                        return True
                     else:
                         raise Exception(
                             "New user can't have negative cookies!")
@@ -267,6 +297,7 @@ class Cookies(Plugin):
                 if self.db_user["cookies"] + inc >= 0:
                     self.db_user["cookies"] += inc
                     self.update()
+                    return True
                 else:
                     raise Exception(
                         "Existing user cannot have negative cookies!")
@@ -299,7 +330,7 @@ class Cookies(Plugin):
             def update(self):
                 """Apply updates to self.db_user to the database
                 """
-                self.db.update({"user": self.id}, {"$set": self.db_user})
+                self.db.update_one({"user": self.id}, {"$set": self.db_user})
 
             def consume(self, emoji, context):
                 """Consumes the target emoji, handing inventory and applying effects
@@ -369,7 +400,7 @@ class Cookies(Plugin):
                 print("removing role for " + member.name)
                 await member.remove_roles(role_obj)
 
-            self.db.update(
+            self.db.update_one(
                 {"user": uid},
                 {"$pull": {"roles": role}},
             )
@@ -481,7 +512,7 @@ class Cookies(Plugin):
                         {"name": "cookie" +
                             str(r[1]), "image": self.cookie_png},
                     ],
-                    [asyncio.sleep, (0.5,), {}],
+                    [asyncio.sleep, (1,), {}],
                     [send_message, ("$0", "$2"), {}],
                 ]
             )
@@ -507,7 +538,7 @@ class Cookies(Plugin):
             message.target,
             "<@%s> dropped a cookie" % message.author,
             reactions=(("🍪", self.collect_cookie),),
-            delete_after=60,
+            # delete_after=60,
             follows=message,
         )
 
@@ -803,6 +834,23 @@ class Cookies(Plugin):
                 "Which item would you like to make an offer for?",
                 answers=answers,
             )
+
+    def topten(self, message, *args):
+        users = self.db.find()
+        users = sorted(users, key=lambda u: u['cookies'], reverse=True)
+        # a tuple of (nick, cookies)
+        toptenusers = [(getattr(self.bot.server.client.get_user(u["user"]), 'name', 'unknown'), u["cookies"]) for u in users[:10]]
+        self.bot.msg(
+            message.target,
+            "Top 10 richest users:\n%s"
+            % "\n".join(
+                [
+                    "%s: %s cookies"
+                    % u
+                    for u in toptenusers
+                ]
+            ),
+        )
 
     def collect_cookie(self, r):
         if r["reactor"] == self.bot.server.me():
