@@ -1,5 +1,9 @@
 from taiiwobot import Plugin
 import time
+from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator
+from datetime import datetime
+import pytz
 
 
 class Moderator(Plugin):
@@ -88,6 +92,7 @@ class Moderator(Plugin):
                         "d days Number of days the user is banned for 1",
                         "h hours Number of hours the user is banned for 1",
                         "m minutes Number of minutes the user is banned for 1",
+                        "dm delete-message-days Number of days of messages to delete 1",
                         "r reason The reason for their ban 1",
                     ],
                     self.ban,
@@ -103,6 +108,12 @@ class Moderator(Plugin):
                     "removes a mod role for this server. Args: <role>",
                     [],
                     self.remove_role_command,
+                ),
+                bot.util.Subcommand(
+                    "scores",
+                    "Some basic moderation statistics",
+                    [],
+                    self.scores,
                 ),
             ],
         ).listen()  # sets the on message callbacks and parses messages
@@ -167,6 +178,7 @@ class Moderator(Plugin):
         days="0",
         hours="0",
         minutes="0",
+        delete_message_days="0",
         reason=None,
         forever=False
     ):
@@ -191,7 +203,8 @@ class Moderator(Plugin):
                     [
                         user.guild.ban,
                         (user,),
-                        {"reason": reason, "delete_message_days": 0},
+                        {"reason": reason, "delete_message_days": int(
+                            delete_message_days)},
                     ]
                 ]
                 if not forever:
@@ -220,6 +233,7 @@ class Moderator(Plugin):
                         "server": user.guild.id,
                         "end": None if forever else time.time() + duration,
                         "reason": reason,
+                        "mod": message.author,
                         "lifted": False,
                     }
                 )
@@ -366,3 +380,75 @@ class Moderator(Plugin):
         await server.unban(user)
         self.bot.msg(self.bot.config["audit_channel"],
                      "<@%s> was unbanned" % user.id)
+
+    @Plugin.authenticated
+    def scores(self, message, *args):
+        # get the 5 top mods for bans
+        top5bans = self.db.aggregate(
+            [
+                {"$match": {"type": "ban"}},
+                {"$group": {"_id": "$mod", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 5},
+            ]
+        )
+        print(list(top5bans))
+        # get the 5 most common ban reasons
+        top5reasons = self.db.aggregate(
+            [
+                {"$match": {"type": "ban"}},
+                {"$group": {"_id": "$reason", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 5},
+            ]
+        )
+        # Retrieve all ban entries
+        bans = self.db.find({"type": "ban"})
+
+        # An empty list to hold all the ban times
+        ban_times = []
+
+        for ban in bans:
+            # Extract the timestamp from the ObjectID
+            timestamp = ban['_id'].generation_time
+            timestamp = timestamp.astimezone(
+                pytz.timezone('UTC'))  # convert to UTC
+
+            # We're interested only in the hour of the day the ban took place
+            ban_times.append(timestamp.hour)
+
+        # Create the histogram
+        fig, ax = plt.subplots()
+        ax.hist(ban_times, bins=24, range=(0, 24), edgecolor='black')
+        ax.set_title('Ban Times')
+        ax.set_xlabel('Hour of the Day (UTC)')
+        ax.set_ylabel('Number of Bans')
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+        # Save the histogram as an image file
+        plt.savefig('ban_times.png')
+        plt.close()
+
+        # write the message
+        msg = (
+            "Top 5 mods for bans:\n"
+            + "\n".join(
+                [
+                    "<@%s>: %s bans" % (x["_id"], x["count"])
+                    for x in top5bans
+                    if x["_id"] != None
+                ]
+            )
+            + "\n\nTop 5 ban reasons:\n"
+            + "\n".join(
+                [
+                    "%s: %s bans" % (x["_id"], x["count"])
+                    for x in top5reasons
+                    if x["_id"] != None
+                ]
+            )
+        )
+
+        # Send the image as a Discord message
+        with open('ban_times.png', 'rb') as f:
+            self.bot.msg(message.target, msg, files=[("chart.png", f)])
