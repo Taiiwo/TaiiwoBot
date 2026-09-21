@@ -26,7 +26,7 @@ class Discord(Server):
         self.reaction_callbacks = {}
         self.message_callbacks = {}
         self.followed_messages = {}
-        intents = discord.Intents.none()
+        intents = discord.Intents.default()
         intents.message_content = True
         # guild_members and presences intentionally disabled: the bot no
         # longer relies on cached Member data; role lookups go via fetch_member.
