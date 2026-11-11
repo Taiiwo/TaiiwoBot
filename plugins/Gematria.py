@@ -5,6 +5,7 @@ import lib.cicada.cicada
 from lib.cicada.cicada.gematria import Latin, Runes
 
 cicada = lib.cicada.cicada
+RUNE_ALPHA = Runes("").alpha
 
 
 class Gematria(Plugin):
@@ -203,7 +204,7 @@ class Gematria(Plugin):
         total_sum = input.gematria_sum()
         # entropy = round(input.entropy(), 3)
         # ioc = round(input.index_of_coincidence(), 3)
-        rune_count = len(input.to_runes().text.replace(" ", ""))
+        rune_count = sum(1 for c in input.to_runes().text if c in RUNE_ALPHA)
         # Total sum, and rune count
         return f"| Total Sum: {total_sum} | Rune Count: {rune_count} | Prime sum: {self.is_prime(total_sum)} | Emirp sum: {self.is_prime(int(str(total_sum)[::-1]))} |\n"
 
@@ -243,8 +244,8 @@ class Gematria(Plugin):
         if runes:
             input = Runes("".join(args))
         else:
-            input = Runes(Latin(" ".join(args)).to_runes().text.replace(" ", ""))
-        n = sum(input.to_index())
+            input = Runes(Latin(" ".join(args)).to_runes().text)
+        n = sum(c for c in input.to_index() if type(c) is int)
         self.bot.msg(message.target, n, follows=message)
         if self.is_prime(n):
             self.bot.msg(message.target, "It's also prime!", follows=message)
